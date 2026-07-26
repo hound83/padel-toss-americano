@@ -2,8 +2,22 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Toss / Americano Koriander</title>
+
+<!-- Home-screen / PWA polish. Only has any effect when the page is served over
+     http(s); harmless when the file is opened locally. Lets iPad and Android
+     users add the scheduler to their home screen and launch it full-screen,
+     without a browser address bar, so it behaves like an installed app. -->
+<meta name="theme-color" content="#0D3B3B">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Koriander">
+<meta name="description" content="Padel toss & americano schedule generator — fair rotation, live standings.">
+<!-- Inline SVG icon (a ball on the brand teal), so there is still no external request. -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230D3B3B'/%3E%3Ccircle cx='90' cy='90' r='44' fill='%23CFE23A'/%3E%3Cpath d='M90 46a44 44 0 0 0 0 88' fill='none' stroke='%230D3B3B' stroke-width='7'/%3E%3C/svg%3E">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230D3B3B'/%3E%3Ccircle cx='32' cy='32' r='16' fill='%23CFE23A'/%3E%3C/svg%3E">
 <!-- Fonts: system fallbacks only (no external font fetch), for reliability on restricted/sandboxed viewers -->
 <style>
   :root{
@@ -219,6 +233,13 @@
   .format-btn{
     flex:1;
     min-width:150px;
+    /* A stretched <button> vertically centres its own content, so a card with a
+       one-line description sat lower than its two-line neighbours. Making the
+       button an explicit top-aligned column keeps every title on one line. */
+    display:flex;
+    flex-direction:column;
+    align-items:stretch;
+    justify-content:flex-start;
     padding:16px 16px;
     border-radius:12px;
     border:2px solid var(--line);
@@ -280,7 +301,9 @@
   .court-btn.disabled:hover,
   .court-btn:disabled:hover{ border-color:var(--line); }
   .courts-min-note{
-    margin:0 0 8px;
+    /* 18px below matches the rhythm of the other Step 1 sections, so the note
+       doesn't crowd the heading that follows it. */
+    margin:0 0 18px;
     font-size:var(--fs-xs);
     color:var(--ink-soft);
   }
@@ -289,7 +312,10 @@
   .courts-alt-note{ display:inline-block; margin-top:6px; color:var(--teal-900); font-weight:600; }
 
   .courts-preview{
-    display:flex; align-items:flex-start; gap:18px; flex-wrap:wrap;
+    /* baseline (not flex-start): the note's FIRST line shares a baseline with
+       the big court number and its label, so the row reads as one line —
+       and it stays correct however many lines the note wraps to. */
+    display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;
     background:var(--surface);
     border:1.5px solid var(--teal-700);
     border-radius:12px;
@@ -755,7 +781,7 @@
       <button type="button" class="lang-btn" data-lang="en">EN</button>
     </div>
 
-    <h2 class="panel-title" data-i18n="p1Title">Toernooi instellen</h2>
+    <h2 class="panel-title" data-i18n="p1Title">Speelvorm &amp; spelers</h2>
     <p class="panel-sub" data-i18n="p1Sub">Banen zijn wat je daadwerkelijk gereserveerd hebt.</p>
 
     <p class="sub-heading" data-i18n="formatHeading">Wat voor speelvorm?</p>
@@ -765,11 +791,11 @@
         <div class="fb-desc" data-i18n="formatTossDesc">Alleen een schema, geen uitslagen invullen</div>
       </button>
       <button class="format-btn" type="button" data-format="splitToss">
-        <div class="fb-name" data-i18n="formatSplitToss">Gesplitste Toss</div>
+        <div class="fb-name" data-i18n="formatSplitToss">Gesplitste toss</div>
         <div class="fb-desc" data-i18n="formatSplitTossDesc">Beginners + gevorderden apart ingedeeld — optioneel met uitslagen en klassement per niveau</div>
       </button>
       <button class="format-btn" type="button" data-format="americano">
-        <div class="fb-name" data-i18n="formatAmericano">Americano / Gevorderde toss</div>
+        <div class="fb-name" data-i18n="formatAmericano">Americano</div>
         <div class="fb-desc" data-i18n="formatAmericanoDesc">Met score, klassement en optioneel een winnaars/verliezers-schema</div>
       </button>
     </div>
@@ -1015,7 +1041,7 @@
   var STR = {
     nl: {
       stepSetup: 'Instellen', stepNames: 'Namen', stepSchedule: 'Schema',
-      p1Title: 'Toernooi instellen',
+      p1Title: 'Speelvorm & spelers',
       p1Sub: 'Kies eerst hoeveel banen je hebt. Vul daarna in hoeveel spelers er komen. Er spelen maar 4 tegelijk per baan — wie niet speelt, wacht tot de volgende ronde.',
       p1PlayersHeading: 'Hoeveel spelers?',
       p1PlayersUnit: 'spelers',
@@ -1099,7 +1125,7 @@
       formatTossDesc: 'Alleen een schema, geen uitslagen invullen',
       formatSplitToss: 'Gesplitste toss',
       formatSplitTossDesc: 'Beginners + gevorderden apart ingedeeld — optioneel met uitslagen en klassement per niveau',
-      formatAmericano: 'Americano / Gevorderde toss',
+      formatAmericano: 'Americano',
       formatAmericanoDesc: 'Met score, klassement en optioneel een winnaars/verliezers-schema',
       beginnerLabel: 'Beginner toss',
       gevorderdLabel: 'Gevorderde toss',
@@ -1122,7 +1148,7 @@
     },
     en: {
       stepSetup: 'Setup', stepNames: 'Names', stepSchedule: 'Schedule',
-      p1Title: 'Set up the tournament',
+      p1Title: 'Format & players',
       p1Sub: 'Pick your courts first — however many you\'ve actually got booked. Players is everyone showing up. Only 4 play on a court at once — whoever isn\'t playing waits for the next round.',
       p1PlayersHeading: 'How many players?',
       p1PlayersUnit: 'players',
@@ -1204,12 +1230,12 @@
       formatHeading: 'What kind of format?',
       formatToss: 'Toss',
       formatTossDesc: 'Just a schedule, no results to fill in',
-      formatSplitToss: 'Split Toss',
-      formatSplitTossDesc: 'Beginner + Advanced, scheduled separately — optionally with results and a leaderboard per level',
-      formatAmericano: 'Americano / Advanced Toss',
+      formatSplitToss: 'Split toss',
+      formatSplitTossDesc: 'Beginners + advanced, scheduled separately — optionally with results and a leaderboard per level',
+      formatAmericano: 'Americano',
       formatAmericanoDesc: 'With scores, a leaderboard, and an optional winners/losers schedule',
-      beginnerLabel: 'Beginner Toss',
-      gevorderdLabel: 'Advanced Toss',
+      beginnerLabel: 'Beginner toss',
+      gevorderdLabel: 'Advanced toss',
       beginnerPlayersHeading: 'Beginner players',
       gevorderdPlayersHeading: 'Advanced players',
       resultsToggleLabel: 'Results',
