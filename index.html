@@ -2,40 +2,37 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Toss / Americano Koriander</title>
-
-<!-- Home-screen / PWA polish. Only has any effect when the page is served over
-     http(s); harmless when the file is opened locally. Lets iPad and Android
-     users add the scheduler to their home screen and launch it full-screen,
-     without a browser address bar, so it behaves like an installed app. -->
-<meta name="theme-color" content="#0D3B3B">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Koriander">
-<meta name="description" content="Padel toss & americano schedule generator — fair rotation, live standings.">
-<!-- Inline SVG icon (a ball on the brand teal), so there is still no external request. -->
-<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' rx='38' fill='%230D3B3B'/%3E%3Ccircle cx='90' cy='90' r='44' fill='%23CFE23A'/%3E%3Cpath d='M90 46a44 44 0 0 0 0 88' fill='none' stroke='%230D3B3B' stroke-width='7'/%3E%3C/svg%3E">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230D3B3B'/%3E%3Ccircle cx='32' cy='32' r='16' fill='%23CFE23A'/%3E%3C/svg%3E">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toss / Americano</title>
 <!-- Fonts: system fallbacks only (no external font fetch), for reliability on restricted/sandboxed viewers -->
 <style>
   :root{
-    --teal-900:#0D3B3B;
-    --teal-700:#12474A;
-    --teal-600:#1B6068;
-    --mist:#EDF4F1;
+    /* Athlon palette. --teal-900 is Athlon's primary navy (#1C437D, taken
+       from Athlon's own site theme-color); the other steps are derived
+       tints/shades of it. Variable names are kept from the original theme
+       so the rest of the stylesheet needs no changes. All foreground/
+       background pairs were checked against WCAG AA. */
+    --teal-900:#1C437D;
+    --teal-700:#27568F;
+    --teal-600:#3670AE;
+    --mist:#EEF3FA;
     --surface:#FFFFFF;
-    --ball:#CFE23A;
-    --ball-dark:#8FA01B;
-    --coral:#E2574C;
-    --ink:#0F2422;
-    --ink-soft:#547069;
-    --line:#D8E5E0;
+    --ball:#FFC72C;
+    --ball-dark:#7A6000;
+    --coral:#C7443A;
+    --ink:#12233D;
+    --ink-soft:#54688A;
+    --line:#D5E0EE;
+    /* Level colours picked to match the metal each level is named after,
+       while still clearing WCAG AA against both the page and white. */
+    --lv-silver:#63717F;
+    --lv-gold:#7A6000;
+    --lv-platinum:#2E6E8E;
+    --lv-silver-on-dark:#C9D3DD;
 
-    --font-display:'Archivo Black', Impact, 'Arial Narrow Bold', sans-serif;
-    --font-body:'Inter', system-ui, -apple-system, sans-serif;
-    --font-mono:'IBM Plex Mono', 'SFMono-Regular', Consolas, monospace;
+    --font-display:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-body:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
 
     /* Consolidated type scale — a handful of sizes reused everywhere,
        instead of a different size per element. */
@@ -79,8 +76,9 @@
   .brand{ display:flex; align-items:baseline; gap:12px; }
   .brand h1{
     font-family:var(--font-display);
+    font-weight:800;
     font-size:clamp(24px, 4vw, 34px);
-    letter-spacing:0.5px;
+    letter-spacing:0.01em;
     margin:0;
     color:var(--teal-900);
     text-transform:uppercase;
@@ -148,27 +146,12 @@
   .panel{ display:none; }
   .panel.visible{ display:block; }
 
-  /* Shown only when scripts are blocked (e.g. the iOS Quick Look preview). */
-  .noscript-card{
-    background:var(--surface);
-    border:2px solid var(--teal-900);
-    border-left-width:8px;
-    border-radius:14px;
-    padding:22px 24px;
-    margin:8px 0 26px;
-    line-height:1.55;
-  }
-  .noscript-card h2{ margin:0 0 10px; font-size:19px; color:var(--teal-900); }
-  .noscript-card p{ margin:0 0 12px; }
-  .noscript-card ol{ margin:0 0 4px; padding-left:22px; }
-  .noscript-card li{ margin-bottom:8px; }
-  .noscript-card hr{ border:0; border-top:1px solid var(--line); margin:22px 0 18px; }
-
   h2.panel-title{
     font-family:var(--font-display);
+    font-weight:800;
     font-size:clamp(20px, 3vw, 26px);
     text-transform:uppercase;
-    letter-spacing:0.3px;
+    letter-spacing:0.01em;
     color:var(--teal-900);
     margin:0 0 6px;
   }
@@ -195,7 +178,7 @@
   }
   .count-input-row .stepper-btn:first-child{ border-radius:10px 0 0 10px; }
   .count-input-row .stepper-btn:last-of-type{ border-radius:0 10px 10px 0; }
-  #playerCountInput, #beginnerCountInput, #gevorderdCountInput{
+  #playerCountInput, #beginnerCountInput, #ervarenCountInput, #gevorderdCountInput{
     width:110px; height:52px;
     text-align:center;
     border:2px solid var(--teal-900);
@@ -214,7 +197,6 @@
   }
 
   .chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px; }
-  .chip-row-split{ margin-bottom:0; }
   .chip{
     font-family:var(--font-mono);
     font-size:var(--fs-sm);
@@ -233,32 +215,29 @@
   .format-btn{
     flex:1;
     min-width:150px;
-    /* A stretched <button> vertically centres its own content, so a card with a
-       one-line description sat lower than its two-line neighbours. Making the
-       button an explicit top-aligned column keeps every title on one line. */
-    display:flex;
-    flex-direction:column;
-    align-items:stretch;
-    justify-content:flex-start;
     padding:16px 16px;
     border-radius:12px;
     border:2px solid var(--line);
     background:var(--surface);
     cursor:pointer;
     text-align:left;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
     transition:border-color .15s ease, transform .1s ease;
   }
   .format-btn:hover{ border-color:var(--teal-600); }
-  .format-btn .fb-name{ font-family:var(--font-display); font-size:var(--fs-base); color:var(--teal-900); text-transform:uppercase; letter-spacing:.02em; margin-bottom:4px; }
+  .format-btn .fb-name{ font-family:var(--font-display); font-weight:800; font-size:var(--fs-base); color:var(--teal-900); text-transform:uppercase; letter-spacing:.02em; margin-bottom:4px; }
   .format-btn .fb-desc{ font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.35; }
   .format-btn.active{ border-color:var(--teal-900); background:var(--teal-900); }
   .format-btn.active .fb-name{ color:var(--ball); }
-  .format-btn.active .fb-desc{ color:#B7CFC9; }
+  .format-btn.active .fb-desc{ color:#AFC6E4; }
 
   /* ---------- Dual group (Beginner / Gevorderd) blocks ---------- */
   .dual-group{ margin-bottom:24px; }
   .dual-group-head{
     font-family:var(--font-display);
+    font-weight:800;
     font-size:var(--fs-md);
     text-transform:uppercase;
     letter-spacing:.03em;
@@ -267,13 +246,20 @@
     padding-bottom:8px;
     border-bottom:2px solid var(--line);
   }
-  .dual-group-head.gevorderd{ color:var(--coral); }
+  .dual-group-head.lv-silver{ color:var(--lv-silver); }
+  .dual-group-head.lv-gold{ color:var(--lv-gold); }
+  .dual-group-head.lv-platinum{ color:var(--lv-platinum); }
+  .level-columns{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px; }
+  .level-hint{ margin:10px 0 0; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.5; max-width:70ch; }
+  .level-col.level-disabled{ opacity:.45; }
+  .level-col.level-disabled .stepper-btn{ cursor:not-allowed; }
   .dual-columns{ display:grid; grid-template-columns:1fr; gap:22px; }
   @media (min-width:760px){ .dual-columns{ grid-template-columns:1fr 1fr; } }
 
-  .courts-select{ display:flex; gap:10px; margin-bottom:8px; }
+  .courts-select{ display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
   .court-btn{
-    flex:1;
+    flex:0 1 auto;
+    min-width:76px;
     max-width:110px;
     padding:16px 10px;
     border-radius:12px;
@@ -289,32 +275,39 @@
   .court-btn .cb-label{ font-size:var(--fs-xs); color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
   .court-btn.active{ border-color:var(--teal-900); background:var(--teal-900); }
   .court-btn.active .cb-num{ color:var(--ball); }
-  .court-btn.active .cb-label{ color:#B7CFC9; }
-  .court-btn.disabled,
-  .court-btn:disabled{
-    opacity:.35;
-    cursor:not-allowed;
-    background:var(--surface);
-    border-color:var(--line);
-    border-style:dashed;
+  .court-btn.active .cb-label{ color:#AFC6E4; }
+
+  .courts-more{
+    display:flex; flex-direction:column; justify-content:center; gap:4px;
+    padding-left:6px;
   }
-  .court-btn.disabled:hover,
-  .court-btn:disabled:hover{ border-color:var(--line); }
-  .courts-min-note{
-    /* 18px below matches the rhythm of the other Step 1 sections, so the note
-       doesn't crowd the heading that follows it. */
-    margin:0 0 18px;
-    font-size:var(--fs-xs);
+  .courts-more label{
+    font-family:var(--font-mono);
+    font-size:var(--fs-2xs);
+    text-transform:uppercase;
+    letter-spacing:.05em;
     color:var(--ink-soft);
   }
-  .regroup-warn{ margin:8px 0 0; font-size:var(--fs-xs); color:#8A5A00; background:#FFF6E0;
-    border-left:4px solid #E0A200; border-radius:6px; padding:8px 10px; }
-  .courts-alt-note{ display:inline-block; margin-top:6px; color:var(--teal-900); font-weight:600; }
+  .courts-more select{
+    font-family:var(--font-mono);
+    font-size:var(--fs-base);
+    padding:10px 12px;
+    border-radius:10px;
+    border:2px solid var(--line);
+    background:var(--surface);
+    color:var(--teal-900);
+    cursor:pointer;
+    min-width:118px;
+  }
+  .courts-more select:hover{ border-color:var(--teal-600); }
+  .courts-more.active select{
+    border-color:var(--teal-900);
+    background:var(--teal-900);
+    color:var(--ball);
+    font-weight:700;
+  }
 
   .courts-preview{
-    /* baseline (not flex-start): the note's FIRST line shares a baseline with
-       the big court number and its label, so the row reads as one line —
-       and it stays correct however many lines the note wraps to. */
     display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;
     background:var(--surface);
     border:1.5px solid var(--teal-700);
@@ -324,10 +317,13 @@
     min-height:34px;
   }
   .courts-stat{ display:flex; align-items:baseline; gap:8px; }
+  .courts-stat .courts-label{ max-width:15ch; }
   .courts-stat .courts-num{ font-family:var(--font-mono); font-size:28px; font-weight:700; color:var(--teal-900); line-height:1; }
   .courts-stat .courts-label{ font-family:var(--font-body); font-size:var(--fs-xs); color:var(--ink-soft); }
   .courts-note{ margin:0; font-size:var(--fs-sm); color:var(--ink-soft); flex:1; min-width:200px; }
   .courts-note b{ color:var(--coral); }
+  .courts-note .courts-fair{ color:var(--ink-soft); }
+  .courts-note .courts-warn{ color:var(--coral); font-weight:600; }
 
   /* ---------- Step 2 ---------- */
   .settings-row{
@@ -406,7 +402,7 @@
   }
   .btn:active{ transform:translateY(1px); }
   .btn-primary{ background:var(--ball); color:var(--teal-900); }
-  .btn-primary:hover{ box-shadow:0 6px 16px -6px rgba(207,226,58,.7); }
+  .btn-primary:hover{ box-shadow:0 6px 16px -6px rgba(255,199,44,.65); }
   .btn-ghost{ background:transparent; color:var(--teal-900); border-color:var(--line); }
   .btn-ghost:hover{ border-color:var(--teal-900); }
   .btn:disabled{ opacity:.45; cursor:not-allowed; }
@@ -439,15 +435,21 @@
 
   .pool-label{
     font-family:var(--font-mono);
-    font-size:var(--fs-2xs);
+    font-size:var(--fs-md);
     text-transform:uppercase;
-    letter-spacing:.06em;
-    font-weight:600;
-    margin:14px 0 8px;
-    padding-left:2px;
+    letter-spacing:.08em;
+    font-weight:700;
+    margin:18px 0 10px;
+    padding:2px 0 6px 10px;
+    /* Bar on the left plus an underline in the level's own colour, so each
+       level reads as its own clearly separated block of the schedule. */
+    border-left:4px solid currentColor;
+    border-bottom:2px solid currentColor;
+    line-height:1.25;
   }
-  .pool-label.top{ color:var(--ball-dark); }
-  .pool-label.bottom{ color:var(--coral); }
+  .pool-label.lv-silver{ color:var(--lv-silver); }
+  .pool-label.lv-gold{ color:var(--lv-gold); }
+  .pool-label.lv-platinum{ color:var(--lv-platinum); }
 
   .courts-grid{
     display:grid;
@@ -505,6 +507,16 @@
     color:var(--ink-soft);
   }
   .resting-line b{ color:var(--coral); font-weight:700; }
+  .sitout-note{
+    margin:6px 0 2px;
+    padding:10px 14px;
+    border-radius:10px;
+    border:1.5px dashed var(--teal-600);
+    background:var(--surface);
+    font-size:var(--fs-sm);
+    color:var(--ink-soft);
+  }
+  .sitout-note b{ color:var(--teal-900); }
 
   /* ---------- Halftime checkpoint ---------- */
   .checkpoint-card{
@@ -514,7 +526,7 @@
     padding:26px 24px;
     text-align:center;
     margin:8px 0 28px;
-    border:2px dashed rgba(207,226,58,.4);
+    border:2px dashed rgba(255,199,44,.45);
   }
   .checkpoint-card .cp-eyebrow{
     font-family:var(--font-mono);
@@ -526,11 +538,12 @@
   }
   .checkpoint-card h4{
     font-family:var(--font-display);
+    font-weight:800;
     text-transform:uppercase;
     font-size:var(--fs-lg);
     margin:0 0 10px;
   }
-  .checkpoint-card p{ margin:0 auto 18px; max-width:440px; font-size:var(--fs-base); color:#CFE2DC; }
+  .checkpoint-card p{ margin:0 auto 18px; max-width:440px; font-size:var(--fs-base); color:#C5D6EC; }
   .checkpoint-card .error-msg{ color:#FFB3AB; margin:14px 0 0; }
 
   /* ---------- Leaderboard ---------- */
@@ -544,6 +557,7 @@
   .board-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
   .board h3{
     font-family:var(--font-display);
+    font-weight:800;
     text-transform:uppercase;
     font-size:var(--fs-lg);
     letter-spacing:.05em;
@@ -554,19 +568,19 @@
     font-family:var(--font-mono);
     font-size:var(--fs-sm);
     background:none;
-    border:1px solid #2A5D58;
-    color:#B7CFC9;
+    border:1px solid #37629C;
+    color:#AFC6E4;
     border-radius:14px;
     padding:4px 10px;
     cursor:pointer;
     white-space:nowrap;
   }
   .board-toggle-btn:hover{ border-color:var(--ball); color:var(--ball); }
-  .board .board-sub{ font-family:var(--font-mono); font-size:var(--fs-xs); color:#B7CFC9; margin-bottom:14px; }
-  .board-note{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:#8FB0A9; margin-top:10px; line-height:1.4; }
+  .board .board-sub{ font-family:var(--font-mono); font-size:var(--fs-xs); color:#AFC6E4; margin-bottom:14px; }
+  .board-note{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:#9DB4D2; margin-top:10px; line-height:1.4; }
   .recalc-star{ font-weight:700; cursor:help; }
   .recalc-star.recalc-down{ color:var(--ball); }
-  .recalc-star.recalc-up{ color:#7EC8E3; font-size:.8em; }
+  .recalc-star.recalc-up{ color:#7FD3F7; font-size:.8em; }
   table.board-table{ width:100%; border-collapse:collapse; font-size:var(--fs-sm); }
   table.board-table th{
     text-align:left;
@@ -574,30 +588,30 @@
     font-size:var(--fs-2xs);
     letter-spacing:.06em;
     text-transform:uppercase;
-    color:#8FB0A9;
+    color:#9DB4D2;
     padding:0 6px 8px;
-    border-bottom:1px solid #1E5652;
+    border-bottom:1px solid #2C5A96;
   }
   table.board-table td{
     padding:8px 6px;
-    border-bottom:1px solid #1E5652;
+    border-bottom:1px solid #2C5A96;
     font-family:var(--font-body);
   }
   table.board-table td.rank{ font-family:var(--font-mono); font-weight:700; color:var(--ball); width:24px; }
   table.board-table td.pts{ font-family:var(--font-mono); font-weight:700; text-align:right; color:#fff; }
   table.board-table td.avg{ font-family:var(--font-mono); font-weight:700; text-align:right; color:var(--ball); }
-  table.board-table td.diff{ font-family:var(--font-mono); font-size:var(--fs-sm); text-align:right; color:#8FB0A9; }
+  table.board-table td.diff{ font-family:var(--font-mono); font-size:var(--fs-sm); text-align:right; color:#9DB4D2; }
   table.board-table td.grp-tag{ font-family:var(--font-mono); font-size:var(--fs-2xs); text-align:right; }
   table.board-table td.grp-tag.top{ color:var(--ball); }
-  table.board-table td.grp-tag.bottom{ color:#FF9B8F; }
-  table.board-table td.grp-tag.out{ color:#7A928D; }
+  table.board-table td.grp-tag.bottom{ color:var(--lv-silver-on-dark); }
+  table.board-table td.grp-tag.out{ color:#8FA3C0; }
   table.board-table th.marker-col{ padding-left:0; padding-right:8px; width:14px; }
   table.board-table td.marker-col{ padding-left:0; padding-right:8px; text-align:left; width:14px; }
-  table.board-table .out-tag{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:#7A928D; margin-left:6px; }
+  table.board-table .out-tag{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:#8FA3C0; margin-left:6px; }
   table.board-table tr:first-child td{ padding-top:12px; }
   table.board-table tr:last-child td{ border-bottom:none; }
 
-  .top3{ background:rgba(207,226,58,.08); }
+  .top3{ background:rgba(255,199,44,.10); }
   .cutoff-row td{ border-top:2px dashed var(--ball); }
 
   /* ---------- Play count panel ---------- */
@@ -611,7 +625,7 @@
     max-width:460px;
   }
   .playcount-section + .playcount-section{ margin-top:20px; padding-top:18px; border-top:1px dashed var(--line); }
-  .playcount-section-title{ font-family:var(--font-display); font-size:var(--fs-md); text-transform:uppercase; letter-spacing:.02em; color:var(--teal-900); margin-bottom:6px; }
+  .playcount-section-title{ font-family:var(--font-display); font-weight:800; font-size:var(--fs-md); text-transform:uppercase; letter-spacing:.02em; color:var(--teal-900); margin-bottom:6px; }
   .playcount-summary{ font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--ink-soft); margin-bottom:12px; }
   table.playcount-table{ width:100%; border-collapse:collapse; font-size:var(--fs-sm); }
   table.playcount-table th{
@@ -676,7 +690,7 @@
   }
   .edit-row input:focus{ border-color:var(--teal-600); }
   .edit-row input.dup-name-input{ border-color:var(--coral); background:#FDF1F0; }
-  .edit-row.is-new input{ border-color:var(--ball-dark); background:#FBFDEE; }
+  .edit-row.is-new input{ border-color:var(--ball-dark); background:#FFFBEC; }
   .edit-row .remove-btn{
     width:38px; height:38px;
     flex:0 0 auto;
@@ -692,7 +706,7 @@
   /* ---------- Confirm modal ---------- */
   .modal-overlay{
     position:fixed; inset:0;
-    background:rgba(15,36,34,.55);
+    background:rgba(18,35,61,.55);
     display:none;
     align-items:center; justify-content:center;
     padding:20px;
@@ -705,13 +719,14 @@
     padding:26px 26px 20px;
     max-width:360px;
     width:100%;
-    box-shadow:0 20px 50px -12px rgba(13,59,59,.5);
+    box-shadow:0 20px 50px -12px rgba(28,67,125,.45);
   }
   .modal-box p{ margin:0 0 20px; font-size:var(--fs-base); color:var(--ink); }
   .modal-actions{ display:flex; gap:10px; justify-content:flex-end; }
 
   @media print{
     .steps, .schedule-actions, .board, .checkpoint-card, .lang-switch{ display:none !important; }
+    #loadBtn, #saveBtn{ display:none !important; }
     body{ background:#fff; }
     .match-card{ break-inside:avoid; }
   }
@@ -722,7 +737,7 @@
 
   <div class="masthead">
     <div class="brand">
-      <h1>Toss / Americano Koriander</h1>
+      <h1 id="appTitle">Toss / Americano</h1>
       <span class="ball-dot" aria-hidden="true"></span>
     </div>
     <div class="meta-strip" id="metaStrip" style="display:none;"></div>
@@ -734,46 +749,6 @@
     <div class="step" data-step="3"><span class="num">3</span> <span data-i18n="stepSchedule">Schema</span></div>
   </div>
 
-  <!--
-    Without JavaScript every panel below stays hidden, which is what makes the
-    app look like a blank page in iOS/iPadOS Quick Look (the preview sheet you
-    get when tapping an .html attachment in Mail, WhatsApp, Files or another
-    app). That preview deliberately does not run scripts. This block is the
-    only thing such a viewer will show, so it has to explain the fix on its own,
-    in both languages, without relying on the i18n system.
-  -->
-  <noscript>
-    <div class="noscript-card">
-      <h2>⚠️ Open dit bestand in een browser</h2>
-      <p>
-        Deze planner heeft JavaScript nodig. Je bekijkt het bestand nu in een
-        <b>voorbeeldvenster</b> (bijvoorbeeld vanuit Mail, WhatsApp, Bestanden of
-        een andere app op iPad/iPhone) en dat venster voert geen scripts uit —
-        daarom zie je een lege pagina.
-      </p>
-      <p><b>Zo krijg je het wel werkend:</b></p>
-      <ol>
-        <li><b>Beste optie:</b> zet het bestand online (bijv. GitHub Pages of Netlify Drop) en open die link in Safari of Chrome. Kies daarna <i>Deel → Zet op beginscherm</i> voor een app-achtige snelkoppeling.</li>
-        <li>Of open het bestand op een laptop/desktop — daar werkt dubbelklikken gewoon.</li>
-        <li>Of gebruik op iPad een app die lokale HTML mét scripts opent, zoals <i>Documents by Readdle</i>.</li>
-      </ol>
-      <hr>
-      <h2>⚠️ Please open this file in a browser</h2>
-      <p>
-        This scheduler needs JavaScript. You are viewing the file in a
-        <b>preview window</b> (from Mail, WhatsApp, Files or another app on
-        iPad/iPhone), and that preview does not run scripts — which is why the
-        page looks empty.
-      </p>
-      <p><b>How to get it working:</b></p>
-      <ol>
-        <li><b>Best option:</b> host the file (e.g. GitHub Pages or Netlify Drop) and open that link in Safari or Chrome, then use <i>Share → Add to Home Screen</i> for an app-like shortcut.</li>
-        <li>Or open the file on a laptop/desktop, where double-clicking just works.</li>
-        <li>Or on iPad use an app that opens local HTML with scripts enabled, such as <i>Documents by Readdle</i>.</li>
-      </ol>
-    </div>
-  </noscript>
-
   <!-- STEP 1 -->
   <section class="panel" id="panel1">
     <div class="lang-switch" id="langSwitch">
@@ -781,8 +756,8 @@
       <button type="button" class="lang-btn" data-lang="en">EN</button>
     </div>
 
-    <h2 class="panel-title" data-i18n="p1Title">Speelvorm &amp; spelers</h2>
-    <p class="panel-sub" data-i18n="p1Sub">Banen zijn wat je daadwerkelijk gereserveerd hebt.</p>
+    <h2 class="panel-title" data-i18n="p1Title">Speelvorm instellen</h2>
+    <p class="panel-sub" data-i18n="p1Sub">Kies eerst een speelvorm. Geef daarna aan hoeveel banen je hebt en hoeveel spelers er komen.</p>
 
     <p class="sub-heading" data-i18n="formatHeading">Wat voor speelvorm?</p>
     <div class="format-select" id="formatSelect">
@@ -791,11 +766,11 @@
         <div class="fb-desc" data-i18n="formatTossDesc">Alleen een schema, geen uitslagen invullen</div>
       </button>
       <button class="format-btn" type="button" data-format="splitToss">
-        <div class="fb-name" data-i18n="formatSplitToss">Gesplitste toss</div>
+        <div class="fb-name" data-i18n="formatSplitToss">Gesplitste Toss</div>
         <div class="fb-desc" data-i18n="formatSplitTossDesc">Beginners + gevorderden apart ingedeeld — optioneel met uitslagen en klassement per niveau</div>
       </button>
       <button class="format-btn" type="button" data-format="americano">
-        <div class="fb-name" data-i18n="formatAmericano">Americano</div>
+        <div class="fb-name" data-i18n="formatAmericano">Americano / Competitieve toss</div>
         <div class="fb-desc" data-i18n="formatAmericanoDesc">Met score, klassement en optioneel een winnaars/verliezers-schema</div>
       </button>
     </div>
@@ -806,80 +781,86 @@
       <button class="court-btn" type="button" data-courts="2"><div class="cb-num">2</div><div class="cb-label" data-i18n="courtUnitPlural">banen</div></button>
       <button class="court-btn" type="button" data-courts="3"><div class="cb-num">3</div><div class="cb-label" data-i18n="courtUnitPlural">banen</div></button>
       <button class="court-btn" type="button" data-courts="4"><div class="cb-num">4</div><div class="cb-label" data-i18n="courtUnitPlural">banen</div></button>
+      <div class="courts-more">
+        <label for="courtsMoreSelect" data-i18n="courtsMoreLabel">Meer banen (5–12)</label>
+        <select id="courtsMoreSelect" aria-label="More courts">
+          <option value="" disabled hidden data-i18n="courtsMorePlaceholder">Kies aantal…</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+      </div>
     </div>
-    <p class="courts-min-note" id="courtsMinNote" style="display:none;"></p>
 
     <!-- Single player count (Toss / Americano) -->
     <div id="singlePlayersBlock">
       <p class="sub-heading" data-i18n="p1PlayersHeading">Hoeveel spelers?</p>
       <div class="count-input-row">
         <button type="button" class="stepper-btn" id="countMinus" aria-label="Fewer players">−</button>
-        <input type="number" id="playerCountInput" min="4" max="32" value="16" inputmode="numeric" aria-label="Number of players">
+        <input type="number" id="playerCountInput" min="4" max="96" value="16" inputmode="numeric" aria-label="Number of players">
         <button type="button" class="stepper-btn" id="countPlus" aria-label="More players">+</button>
         <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
       </div>
       <div class="chip-row" id="chipRow">
         <button class="chip" type="button" data-count="8">8</button>
         <button class="chip" type="button" data-count="12">12</button>
-        <button class="chip" type="button" data-count="14">14</button>
         <button class="chip" type="button" data-count="16">16</button>
         <button class="chip" type="button" data-count="20">20</button>
         <button class="chip" type="button" data-count="24">24</button>
-        <button class="chip" type="button" data-count="28">28</button>
         <button class="chip" type="button" data-count="32">32</button>
+        <button class="chip" type="button" data-count="40">40</button>
+        <button class="chip" type="button" data-count="48">48</button>
       </div>
     </div>
 
-    <!-- Dual player count (Split Toss: Beginner + Gevorderd) -->
+    <!-- Player count per level (Split Toss: three levels) -->
     <div id="splitPlayersBlock" style="display:none;">
-      <div class="dual-columns">
-        <div>
-          <p class="sub-heading" data-i18n="beginnerPlayersHeading">Aantal beginners</p>
+      <div class="level-columns">
+        <div class="level-col">
+          <p class="sub-heading" data-i18n="beginnerPlayersHeading">Aantal in Zilver</p>
           <div class="count-input-row">
             <button type="button" class="stepper-btn" id="beginnerCountMinus" aria-label="Fewer players">−</button>
-            <input type="number" id="beginnerCountInput" min="4" max="32" value="8" inputmode="numeric" aria-label="Beginner player count">
+            <input type="number" id="beginnerCountInput" min="0" max="96" value="8" inputmode="numeric" aria-label="Beginner player count">
             <button type="button" class="stepper-btn" id="beginnerCountPlus" aria-label="More players">+</button>
             <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
           </div>
-          <div class="chip-row chip-row-split" id="chipRowBeginner">
-            <button class="chip" type="button" data-count="4">4</button>
-            <button class="chip" type="button" data-count="6">6</button>
-            <button class="chip" type="button" data-count="7">7</button>
-            <button class="chip" type="button" data-count="8">8</button>
-            <button class="chip" type="button" data-count="10">10</button>
-            <button class="chip" type="button" data-count="12">12</button>
-            <button class="chip" type="button" data-count="14">14</button>
-            <button class="chip" type="button" data-count="16">16</button>
+        </div>
+        <div class="level-col">
+          <p class="sub-heading" data-i18n="ervarenPlayersHeading">Aantal in Goud</p>
+          <div class="count-input-row">
+            <button type="button" class="stepper-btn" id="ervarenCountMinus" aria-label="Fewer players">−</button>
+            <input type="number" id="ervarenCountInput" min="0" max="96" value="8" inputmode="numeric" aria-label="Ervaren player count">
+            <button type="button" class="stepper-btn" id="ervarenCountPlus" aria-label="More players">+</button>
+            <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
           </div>
         </div>
-        <div>
-          <p class="sub-heading" data-i18n="gevorderdPlayersHeading">Aantal gevorderden</p>
+        <div class="level-col">
+          <p class="sub-heading" data-i18n="gevorderdPlayersHeading">Aantal in Platina</p>
           <div class="count-input-row">
             <button type="button" class="stepper-btn" id="gevorderdCountMinus" aria-label="Fewer players">−</button>
-            <input type="number" id="gevorderdCountInput" min="4" max="32" value="8" inputmode="numeric" aria-label="Gevorderd player count">
+            <input type="number" id="gevorderdCountInput" min="0" max="96" value="0" inputmode="numeric" aria-label="Gevorderd player count">
             <button type="button" class="stepper-btn" id="gevorderdCountPlus" aria-label="More players">+</button>
             <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
           </div>
-          <div class="chip-row chip-row-split" id="chipRowGevorderd">
-            <button class="chip" type="button" data-count="4">4</button>
-            <button class="chip" type="button" data-count="6">6</button>
-            <button class="chip" type="button" data-count="7">7</button>
-            <button class="chip" type="button" data-count="8">8</button>
-            <button class="chip" type="button" data-count="10">10</button>
-            <button class="chip" type="button" data-count="12">12</button>
-            <button class="chip" type="button" data-count="14">14</button>
-            <button class="chip" type="button" data-count="16">16</button>
-          </div>
         </div>
       </div>
+      <p class="level-hint" data-i18n="levelZeroHint">Niveaus worden van links naar rechts gevuld: Zilver eerst, dan Goud, dan Platina. Wil je met één groep spelen, kies dan Toss of Americano.</p>
     </div>
 
     <div class="courts-preview" id="courtsPreview"></div>
-    <p class="error-msg" id="countError" data-i18n="countError">Vul een aantal spelers in tussen 4 en 32.</p>
+    <p class="error-msg" id="countError" data-i18n="countError">Vul een aantal spelers in tussen 4 en 96.</p>
+    <p class="error-msg" id="loadError"></p>
 
     <div class="actions-row" style="margin-top:22px;">
       <button class="btn btn-ghost" id="cancelToScheduleBtn1" type="button" data-i18n="cancelToScheduleBtn" style="display:none;">← Terug naar schema</button>
       <button class="btn btn-primary" id="continueTo2" type="button" data-i18n="continueBtn">Doorgaan →</button>
+      <button class="btn btn-ghost" id="loadBtn" type="button" data-i18n="loadBtn">📂 Opgeslagen schema laden</button>
+      <input type="file" id="loadFileInput" accept=".json,application/json" style="display:none;">
     </div>
   </section>
 
@@ -901,10 +882,9 @@
         <label for="regroupToggle" data-i18n="regroupLabel">Herindeling op de helft</label>
         <div class="toggle-row">
           <input type="checkbox" id="regroupToggle">
-          <label for="regroupToggle" data-i18n="regroupToggleLabel">Splits halverwege in topgroep en ondergroep</label>
+          <label for="regroupToggle" data-i18n="regroupToggleLabel">Splits halverwege in Goud en Zilver</label>
         </div>
         <span class="hint" id="regroupHint"></span>
-        <p class="regroup-warn" id="regroupBalanceWarn" style="display:none;"></p>
       </div>
       <div class="field-group collapsed" id="splitRoundField">
         <label for="splitRoundInput" data-i18n="splitAfterLabel">Splits na ronde</label>
@@ -922,18 +902,26 @@
       <p class="panel-sub" style="margin:-10px 0 20px; font-size:12.5px;" data-i18n="blankNameHint">Laat een veld leeg — dan speelt "Speler N" mee.</p>
     </div>
 
-    <!-- Dual names grid (Split Toss: Beginner + Gevorderd) -->
+    <!-- Names grid per level (Split Toss: three levels) -->
     <div id="namesSplitBlock" style="display:none;">
-      <div class="dual-group">
-        <p class="dual-group-head" data-i18n="beginnerLabel">Beginner toss</p>
+      <div class="dual-group" id="namesGroupBeginner">
+        <p class="dual-group-head lv-silver" data-i18n="beginnerLabel">Zilver</p>
         <div class="names-grid" id="namesGridBeginner"></div>
         <div class="toggle-row" style="margin:4px 0 20px;">
           <input type="checkbox" id="beginnerResultsToggle">
           <label for="beginnerResultsToggle" data-i18n="resultsToggleText">Resultaten bijhouden (zoals Americano)</label>
         </div>
       </div>
-      <div class="dual-group">
-        <p class="dual-group-head gevorderd" data-i18n="gevorderdLabel">Gevorderde toss</p>
+      <div class="dual-group" id="namesGroupErvaren">
+        <p class="dual-group-head lv-gold" data-i18n="ervarenLabel">Goud</p>
+        <div class="names-grid" id="namesGridErvaren"></div>
+        <div class="toggle-row" style="margin:4px 0 20px;">
+          <input type="checkbox" id="ervarenResultsToggle">
+          <label for="ervarenResultsToggle" data-i18n="resultsToggleText">Resultaten bijhouden (zoals Americano)</label>
+        </div>
+      </div>
+      <div class="dual-group" id="namesGroupGevorderd">
+        <p class="dual-group-head lv-platinum" data-i18n="gevorderdLabel">Platina</p>
         <div class="names-grid" id="namesGridGevorderd"></div>
         <div class="toggle-row" style="margin:4px 0 20px;">
           <input type="checkbox" id="gevorderdResultsToggle">
@@ -959,6 +947,7 @@
       <button class="btn btn-ghost" id="editPlayersBtn" data-i18n="editPlayersBtn">✎ Spelers wijzigen</button>
       <button class="btn btn-ghost" id="startOverBtn" data-i18n="startOverBtn">↺ Opnieuw beginnen</button>
       <button class="btn btn-ghost" id="printBtn" data-i18n="printBtn">Schema afdrukken</button>
+      <button class="btn btn-ghost" id="saveBtn" data-i18n="saveBtn">💾 Speelschema opslaan</button>
     </div>
 
     <div class="schedule-layout">
@@ -990,17 +979,24 @@
       </div>
     </div>
 
-    <!-- Dual roster (Split Toss: Beginner + Gevorderd) -->
+    <!-- Roster per level (Split Toss: three levels) -->
     <div id="editSplitBlockWrap" style="display:none;">
-      <div class="dual-group">
-        <p class="dual-group-head" data-i18n="beginnerLabel">Beginner toss</p>
+      <div class="dual-group" id="editGroupBeginner">
+        <p class="dual-group-head lv-silver" data-i18n="beginnerLabel">Zilver</p>
         <div class="edit-roster-list" id="editRosterListBeginner"></div>
         <div class="actions-row" style="margin-bottom:22px;">
           <button class="btn btn-ghost" id="editAddBeginnerBtn" type="button" data-i18n="editAddBtn">+ Speler toevoegen</button>
         </div>
       </div>
-      <div class="dual-group">
-        <p class="dual-group-head gevorderd" data-i18n="gevorderdLabel">Gevorderde toss</p>
+      <div class="dual-group" id="editGroupErvaren">
+        <p class="dual-group-head lv-gold" data-i18n="ervarenLabel">Goud</p>
+        <div class="edit-roster-list" id="editRosterListErvaren"></div>
+        <div class="actions-row" style="margin-bottom:22px;">
+          <button class="btn btn-ghost" id="editAddErvarenBtn" type="button" data-i18n="editAddBtn">+ Speler toevoegen</button>
+        </div>
+      </div>
+      <div class="dual-group" id="editGroupGevorderd">
+        <p class="dual-group-head lv-platinum" data-i18n="gevorderdLabel">Platina</p>
         <div class="edit-roster-list" id="editRosterListGevorderd"></div>
         <div class="actions-row" style="margin-bottom:22px;">
           <button class="btn btn-ghost" id="editAddGevorderdBtn" type="button" data-i18n="editAddBtn">+ Speler toevoegen</button>
@@ -1041,51 +1037,64 @@
   var STR = {
     nl: {
       stepSetup: 'Instellen', stepNames: 'Namen', stepSchedule: 'Schema',
-      p1Title: 'Speelvorm & spelers',
-      p1Sub: 'Kies eerst hoeveel banen je hebt. Vul daarna in hoeveel spelers er komen. Er spelen maar 4 tegelijk per baan — wie niet speelt, wacht tot de volgende ronde.',
+      p1Title: 'Speelvorm instellen',
+      p1Sub: 'Kies eerst een speelvorm. Geef daarna aan hoeveel banen je hebt en hoeveel spelers er komen. Er spelen maar 4 tegelijk per baan — wie niet speelt, wacht tot de volgende ronde.',
       p1PlayersHeading: 'Hoeveel spelers?',
       p1PlayersUnit: 'spelers',
       p1CourtsHeading: 'Hoeveel banen heb je?',
       courtUnitSingular: 'baan',
+      courtsMoreLabel: 'Meer banen (5\u201312)',
+      courtsMorePlaceholder: 'Kies aantal\u2026',
       courtUnitPlural: 'banen',
-      countError: 'Vul een aantal spelers in tussen 4 en 32.',
+      countError: 'Vul een aantal spelers in tussen 4 en 96.',
       continueBtn: 'Doorgaan →',
+      sitOutTitle: 'Deze ronde is anders:',
+      sitOutBody: 'dit niveau slaat deze ronde over, zodat het andere niveau alle banen kan gebruiken. Zo speelt iedereen over alle rondes ongeveer evenveel potjes.',
+      courtsSitOutNote: 'Meestal spelen alle niveaus tegelijk. In een enkele ronde slaat één niveau over zodat een ander alle banen kan gebruiken — zo speelt iedereen ongeveer evenveel potjes. Die rondes staan in het schema vermeld.',
+      courtsRotateNote: 'De banen wisselen per ronde tussen de niveaus, zodat elk niveau ongeveer evenveel potjes speelt.',
+      courtsUnevenWarn: 'Let op: met deze verdeling speelt niet iedereen evenveel \u2014 ongeveer {a} tegen {b} potjes per speler over {n} rondes. {group} komt er bekaaid vanaf. Een baan erbij of een speler verschuiven tussen de niveaus lost dit op.',
       courtsInUse: 'in gebruik',
       courtsUnderused: 'Slechts <b>{active} van je {total} banen</b> kunnen elke ronde gevuld worden met {n} spelers (4 nodig per baan). ',
       courtsNote: '{slots} spelers actief per ronde{resting} — indeling en banen worden elke ronde willekeurig opnieuw bepaald.',
       restingSuffix: ', {n} wachten',
-      courtsAlternateNote: 'De overgebleven baan wisselt elke ronde van groep, zodat beide groepen evenveel speeltijd krijgen.',
-      courtsMin2Note: 'Bij deze speelvorm spelen twee groepen tegelijk — daarvoor heb je minimaal 2 banen nodig.',
       p2Title: 'Namen invoeren',
       p2SubTemplate: '{n} spelers, {courts} \u2192 {active} gevuld per ronde{resting}. Volledig willekeurig elke ronde \u2014 4 op de baan tegelijk.',
       totalRoundsLabel: 'Totaal aantal rondes',
       regroupLabel: 'Herindeling op de helft',
-      regroupToggleLabel: 'Splits halverwege in topgroep en ondergroep',
-      regroupHintEnabled: 'Pauzeer na een ingestelde ronde, rangschik iedereen op punten, en speel daarna twee losse mini-toernooien verder — topgroep samen, ondergroep samen, met jullie banen verdeeld ertussen.',
+      regroupToggleLabel: 'Splits halverwege in Goud en Zilver',
+      regroupHintEnabled: 'Pauzeer na een ingestelde ronde, rangschik iedereen op punten, en speel daarna in twee aparte groepen verder \u2014 de bovenste helft als Goud, de onderste als Zilver, met jullie banen verdeeld ertussen.',
       regroupHintDisabled: 'Vereist minimaal 8 spelers en 2 banen, zodat beide helften tegelijk kunnen spelen.',
       regroupHintNeedsResults: 'Beschikbaar zodra je resultaten bijhoudt.',
       splitAfterLabel: 'Splits na ronde',
       namePlaceholder: 'Speler {n}',
-      namePlaceholderBeginner: 'Beginner {n}',
-      namePlaceholderGevorderd: 'Gevorderd {n}',
+      namePlaceholderBeginner: 'Zilver {n}',
+      namePlaceholderGevorderd: 'Platina {n}',
+      namePlaceholderErvaren: 'Goud {n}',
       blankNameHint: 'Laat een veld leeg — dan speelt "Speler N" mee. Namen vul je aan wanneer je wilt.',
       backBtn: '← Terug',
       cancelToScheduleBtn: '← Terug naar schema',
       generateBtn: 'Genereer schema →',
       editPlayersBtn: '✎ Spelers wijzigen',
       startOverBtn: '↺ Opnieuw beginnen',
+      saveBtn: '💾 Speelschema opslaan',
+      loadBtn: '📂 Opgeslagen schema laden',
+      loadErrNotJson: 'Dit bestand kon niet gelezen worden. Kies het .json-bestand dat je eerder met \'Speelschema opslaan\' hebt gemaakt.',
+      loadErrWrongFile: 'Dit lijkt geen opgeslagen speelschema van deze app te zijn.',
+      loadErrVersion: 'Dit bestand komt uit een nieuwere versie van de app en kan hier niet geopend worden.',
+      loadErrCorrupt: 'Dit opgeslagen speelschema is onvolledig of beschadigd en kan niet geladen worden.',
+      loadErrRead: 'Het bestand kon niet gelezen worden. Probeer het opnieuw.',
       printBtn: 'Schema afdrukken',
       roundLabel: 'RONDE',
       courtLabel: 'Baan',
       vsLabel: 'vs',
       restingPrefix: 'Wachten: ',
-      poolLabelTop: 'Topgroep',
-      poolLabelBottom: 'Ondergroep',
+      poolLabelTop: 'Goud',
+      poolLabelBottom: 'Zilver',
       restingPoolSuffix: ' wachten: ',
       cpEyebrow: 'TUSSENSTAND',
-      cpHeading: 'Bekijk het klassement en splits',
-      cpBody: 'Vul alle scores hierboven in. Zodra je zover bent: rangschik iedereen en ga verder met twee losse mini-toernooien — topgroep tegen topgroep, ondergroep tegen ondergroep, met jullie banen verdeeld ertussen.',
-      cpButton: 'Splits & ga verder →',
+      cpHeading: 'Bekijk het klassement en splits in Goud en Zilver',
+      cpBody: 'Vul alle scores hierboven in. Zodra je zover bent: rangschik iedereen en ga verder in twee aparte groepen \u2014 Goud tegen Goud, Zilver tegen Zilver, met jullie banen verdeeld ertussen.',
+      cpButton: 'Splits in Goud & Zilver \u2192',
       cpError: 'Vul eerst alle scores in voor ronde 1–{n}.',
       boardTitle: 'Klassement',
       boardSub: 'Bij gelijke stand beslist saldo, dan onderling resultaat',
@@ -1095,7 +1104,7 @@
       recalcTooltipUp: 'Opgehoogd van {raw} punten in {played} potjes — minder potjes door de loting, niet je eigen keuze',
       boardHideBtn: 'Verberg klassement',
       boardShowBtn: 'Toon klassement',
-      grpTop: 'TOP', grpBottom: 'OND', grpOut: 'UIT',
+      grpTop: 'GOU', grpBottom: 'ZIL', grpOut: 'UIT',
       modalStartOverText: 'Opnieuw beginnen? Dit wist alle namen en scores.',
       cancelBtn: 'Annuleren',
       confirmStartOverBtn: 'Ja, opnieuw beginnen',
@@ -1105,9 +1114,8 @@
       editRegen: 'ronde {range} wordt opnieuw ingedeeld',
       editAllPlayed: 'Alle rondes zijn al ingedeeld — er is niets meer om opnieuw te schudden.',
       editPoolMain: 'hoofdgroep',
-      editPoolTop: 'topgroep',
-      regroupUnevenWarn: 'Let op: met dit aantal spelers en banen kan de {group} na de splitsing ongeveer {pct}% minder speeltijd krijgen — die groep kan de banen niet volledig vullen. Een ander aantal banen lost dit meestal op.',
-      editPoolBottom: 'ondergroep',
+      editPoolTop: 'Goud',
+      editPoolBottom: 'Zilver',
       editRemoveAria: 'Verwijder speler',
       editAddBtn: '+ Speler toevoegen',
       editAddDisabledNote: 'Nieuwe spelers toevoegen kan niet meer na de tussenstand-split.',
@@ -1124,18 +1132,33 @@
       formatToss: 'Toss',
       formatTossDesc: 'Alleen een schema, geen uitslagen invullen',
       formatSplitToss: 'Gesplitste toss',
-      formatSplitTossDesc: 'Beginners + gevorderden apart ingedeeld — optioneel met uitslagen en klassement per niveau',
-      formatAmericano: 'Americano',
+      formatSplitTossDesc: 'Twee of drie niveaus apart ingedeeld — optioneel met uitslagen en klassement per niveau',
+      formatAmericano: 'Americano / Competitieve toss',
       formatAmericanoDesc: 'Met score, klassement en optioneel een winnaars/verliezers-schema',
-      beginnerLabel: 'Beginner toss',
-      gevorderdLabel: 'Gevorderde toss',
-      beginnerPlayersHeading: 'Aantal beginners',
-      gevorderdPlayersHeading: 'Aantal gevorderden',
+      beginnerLabel: 'Zilver',
+      ervarenLabel: 'Goud',
+      gevorderdLabel: 'Platina',
+      levelCapacityNote: 'Van je {total} banen zijn er {usable} bruikbaar: een baan moet gevuld worden met 4 spelers van hetzelfde niveau, en geen enkel niveau heeft er genoeg voor een extra baan. Meer spelers in één niveau maakt de extra baan bruikbaar.',
+      levelPlaysRounds: '{r} van {n} rondes',
+      courtsNoteRotating: '{level}: speelt in {r} van de {n} rondes \u2014 dan {slots} spelers op de baan{resting}.',
+      courtsStructuralNote: 'Je hebt {levels} niveaus en {courts}. Elk niveau speelt op zijn eigen baan, dus ze kunnen niet allemaal tegelijk \u2014 de niveaus wisselen elkaar af en er is elke ronde minstens \u00e9\u00e9n niveau vrij. Vanaf {need} speelt elk niveau elke ronde.',
+      courtsNoteLevel: '{level}: {slots} spelers actief per ronde{resting}.',
+      restingSuffixRange: ', {a}\u2013{b} wachten',
+      restingSuffixUpTo: ', soms tot {n} wachten',
+      courtsReshuffle: 'Indeling en banen worden elke ronde willekeurig opnieuw bepaald.',
+      sitOutTurnTitle: '{level} is deze ronde vrij.',
+      sitOutTurnBody: 'Met {courts} voor {levels} niveaus kan niet elk niveau tegelijk spelen; ze wisselen elkaar af zodat iedereen over alle rondes ongeveer evenveel potjes speelt.',
+      levelZeroHint: 'Niveaus worden van links naar rechts gevuld: Zilver eerst, dan Goud, dan Platina. Zet een niveau op 0 als je het niet gebruikt \u2014 je hebt er minimaal twee nodig. Wil je met \u00e9\u00e9n groep spelen, kies dan Toss (zonder uitslagen) of Americano / Competitieve toss (met klassement).',
+      levelCountError: 'Vul per niveau 0 of 4\u201396 spelers in. Gebruik minstens twee niveaus, en vul ze van links naar rechts: Platina kan alleen als Goud gevuld is.',
+      beginnerPlayersHeading: 'Aantal in Zilver',
+      ervarenPlayersHeading: 'Aantal in Goud',
+      gevorderdPlayersHeading: 'Aantal in Platina',
       resultsToggleLabel: 'Resultaten',
       resultsToggleText: 'Resultaten bijhouden (zoals Americano)',
       resultsToggleHint: 'Zonder dit is het puur een indeling — geen scores, geen klassement.',
-      editPoolBeginner: 'Beginner toss',
-      editPoolGevorderd: 'Gevorderde toss',
+      editPoolBeginner: 'Zilver',
+      editPoolErvaren: 'Goud',
+      editPoolGevorderd: 'Platina',
       backToSettingsBtn: '← Instellingen wijzigen',
       modalRegenerateText: 'Een nieuw schema maken vervangt het huidige schema en alle ingevulde scores. Weet je het zeker?',
       confirmRegenerateBtn: 'Ja, nieuw schema maken',
@@ -1148,51 +1171,64 @@
     },
     en: {
       stepSetup: 'Setup', stepNames: 'Names', stepSchedule: 'Schedule',
-      p1Title: 'Format & players',
-      p1Sub: 'Pick your courts first — however many you\'ve actually got booked. Players is everyone showing up. Only 4 play on a court at once — whoever isn\'t playing waits for the next round.',
+      p1Title: 'Set up the format',
+      p1Sub: 'Start by picking a format. Then set how many courts you have and how many players are coming. Only 4 play on a court at once — whoever isn\'t playing waits for the next round.',
       p1PlayersHeading: 'How many players?',
       p1PlayersUnit: 'players',
       p1CourtsHeading: 'How many courts do you have?',
       courtUnitSingular: 'court',
+      courtsMoreLabel: 'More courts (5\u201312)',
+      courtsMorePlaceholder: 'Choose\u2026',
       courtUnitPlural: 'courts',
-      countError: 'Enter a number of players between 4 and 32.',
+      countError: 'Enter a number of players between 4 and 96.',
       continueBtn: 'Continue →',
+      sitOutTitle: 'This round is different:',
+      sitOutBody: 'this level sits this round out so the other level can use every court. It keeps the number of games per player even across all the rounds.',
+      courtsSitOutNote: 'Normally every level plays at the same time. In the odd round one level sits out so another can use every court — that keeps games per player even. Those rounds are marked in the schedule.',
+      courtsRotateNote: 'Courts rotate between the levels each round, so every level gets roughly the same number of games.',
+      courtsUnevenWarn: 'Heads up: play time won\'t be equal here \u2014 roughly {a} vs {b} games per player over {n} rounds. {group} gets the short end. Adding a court, or moving a player between levels, fixes it.',
       courtsInUse: 'in use',
       courtsUnderused: 'Only <b>{active} of your {total} courts</b> can be filled each round with {n} players (4 needed per court). ',
       courtsNote: '{slots} players active each round{resting} — matchups and courts are reshuffled randomly every round.',
       restingSuffix: ', {n} waiting',
-      courtsAlternateNote: 'The spare court switches groups every round, so both groups get the same amount of play time.',
-      courtsMin2Note: 'This format runs two groups at the same time, so it needs at least 2 courts.',
       p2Title: 'Enter the lineup',
       p2SubTemplate: '{n} players, {courts} \u2192 {active} filled each round{resting}. Fully randomized every round \u2014 4 on court at a time.',
       totalRoundsLabel: 'Total rounds',
       regroupLabel: 'Halftime regroup',
-      regroupToggleLabel: 'Split into top/bottom halves partway',
-      regroupHintEnabled: 'Pause after a set round, rank everyone by points, then run two separate mini-tournaments for the rest — top half together, bottom half together, sharing your courts between them.',
+      regroupToggleLabel: 'Split into Gold and Silver partway',
+      regroupHintEnabled: 'Pause after a set round, rank everyone by points, then carry on in two separate groups for the rest \u2014 the upper half as Gold, the lower as Silver, sharing your courts between them.',
       regroupHintDisabled: 'Needs at least 8 players and 2 courts, so both halves can play at the same time.',
       regroupHintNeedsResults: 'Available once you\'re tracking results.',
       splitAfterLabel: 'Split after round',
       namePlaceholder: 'Player {n}',
-      namePlaceholderBeginner: 'Beginner {n}',
-      namePlaceholderGevorderd: 'Advanced {n}',
+      namePlaceholderBeginner: 'Silver {n}',
+      namePlaceholderGevorderd: 'Platinum {n}',
+      namePlaceholderErvaren: 'Gold {n}',
       blankNameHint: 'Leave any field blank and it\'ll play as "Player N" — fill in names whenever you\'re ready.',
       backBtn: '← Back',
       cancelToScheduleBtn: '← Back to schedule',
       generateBtn: 'Generate schedule →',
       editPlayersBtn: '✎ Edit players',
       startOverBtn: '↺ Start over',
+      saveBtn: '💾 Save schedule',
+      loadBtn: '📂 Load saved schedule',
+      loadErrNotJson: 'This file could not be read. Pick the .json file you created earlier with \'Save schedule\'.',
+      loadErrWrongFile: 'This does not look like a schedule saved by this app.',
+      loadErrVersion: 'This file comes from a newer version of the app and cannot be opened here.',
+      loadErrCorrupt: 'This saved schedule is incomplete or damaged and cannot be loaded.',
+      loadErrRead: 'The file could not be read. Please try again.',
       printBtn: 'Print schedule',
       roundLabel: 'ROUND',
       courtLabel: 'Court',
       vsLabel: 'vs',
       restingPrefix: 'Waiting: ',
-      poolLabelTop: 'Top group',
-      poolLabelBottom: 'Bottom group',
+      poolLabelTop: 'Gold',
+      poolLabelBottom: 'Silver',
       restingPoolSuffix: ' waiting: ',
       cpEyebrow: 'HALFTIME',
-      cpHeading: 'Check the leaderboard, then split',
-      cpBody: 'Enter every score above. When you\'re ready, rank everyone and continue with two separate mini-tournaments — top half vs top half, bottom half vs bottom half, sharing your courts between them.',
-      cpButton: 'Split into top/bottom & continue →',
+      cpHeading: 'Check the leaderboard, then split into Gold and Silver',
+      cpBody: 'Enter every score above. When you\'re ready, rank everyone and continue in two separate groups \u2014 Gold vs Gold, Silver vs Silver, sharing your courts between them.',
+      cpButton: 'Split into Gold & Silver \u2192',
       cpError: 'Enter every score for rounds 1–{n} first.',
       boardTitle: 'Leaderboard',
       boardSub: 'Ties broken by point diff, then head-to-head',
@@ -1202,7 +1238,7 @@
       recalcTooltipUp: 'Scaled up from {raw} points in {played} games — fewer games by the luck of the draw, not their own choice',
       boardHideBtn: 'Hide leaderboard',
       boardShowBtn: 'Show leaderboard',
-      grpTop: 'TOP', grpBottom: 'BOT', grpOut: 'OUT',
+      grpTop: 'GLD', grpBottom: 'SLV', grpOut: 'OUT',
       modalStartOverText: 'Start over? This clears all names and scores.',
       cancelBtn: 'Cancel',
       confirmStartOverBtn: 'Yes, start over',
@@ -1212,9 +1248,8 @@
       editRegen: 'round {range} will be reshuffled',
       editAllPlayed: 'All rounds are already scheduled — nothing left to reshuffle.',
       editPoolMain: 'group',
-      editPoolTop: 'top group',
-      regroupUnevenWarn: 'Heads up: with this number of players and courts the {group} may get about {pct}% less play time after the split — that group can\'t fill the courts it would be given. A different court count usually resolves it.',
-      editPoolBottom: 'bottom group',
+      editPoolTop: 'Gold',
+      editPoolBottom: 'Silver',
       editRemoveAria: 'Remove player',
       editAddBtn: '+ Add player',
       editAddDisabledNote: 'New players can\'t be added after the halftime split.',
@@ -1230,19 +1265,34 @@
       formatHeading: 'What kind of format?',
       formatToss: 'Toss',
       formatTossDesc: 'Just a schedule, no results to fill in',
-      formatSplitToss: 'Split toss',
-      formatSplitTossDesc: 'Beginners + advanced, scheduled separately — optionally with results and a leaderboard per level',
-      formatAmericano: 'Americano',
+      formatSplitToss: 'Split Toss',
+      formatSplitTossDesc: 'Two or three levels scheduled separately — optionally with results and a leaderboard per level',
+      formatAmericano: 'Americano / Competitive Toss',
       formatAmericanoDesc: 'With scores, a leaderboard, and an optional winners/losers schedule',
-      beginnerLabel: 'Beginner toss',
-      gevorderdLabel: 'Advanced toss',
-      beginnerPlayersHeading: 'Beginner players',
-      gevorderdPlayersHeading: 'Advanced players',
+      beginnerLabel: 'Silver',
+      ervarenLabel: 'Gold',
+      gevorderdLabel: 'Platinum',
+      levelCapacityNote: 'Of your {total} courts, {usable} can be used: a court needs 4 players from the same level, and no level has enough for another court. Adding players to one level frees the extra court up.',
+      levelPlaysRounds: '{r} of {n} rounds',
+      courtsNoteRotating: '{level}: plays in {r} of the {n} rounds \u2014 then {slots} players on court{resting}.',
+      courtsStructuralNote: 'You have {levels} levels and {courts}. Each level plays on its own court, so they cannot all be on at once \u2014 the levels take turns and at least one is free every round. From {need} onwards every level plays every round.',
+      courtsNoteLevel: '{level}: {slots} players active each round{resting}.',
+      restingSuffixRange: ', {a}\u2013{b} waiting',
+      restingSuffixUpTo: ', sometimes up to {n} waiting',
+      courtsReshuffle: 'Matchups and courts are reshuffled randomly every round.',
+      sitOutTurnTitle: '{level} is free this round.',
+      sitOutTurnBody: 'With {courts} for {levels} levels not every level can play at the same time; they take turns so that everyone gets roughly the same number of games across all the rounds.',
+      levelZeroHint: 'Levels fill from left to right: Silver first, then Gold, then Platinum. Set a level to 0 if you are not using it \u2014 you need at least two. For a single group, pick Toss (no results) or Americano / Competitive Toss (with a leaderboard) instead.',
+      levelCountError: 'Enter 0 or 4\u201396 players per level. Use at least two levels and fill them left to right: Platinum needs Gold to be in use.',
+      beginnerPlayersHeading: 'Players in Silver',
+      ervarenPlayersHeading: 'Players in Gold',
+      gevorderdPlayersHeading: 'Players in Platinum',
       resultsToggleLabel: 'Results',
       resultsToggleText: 'Track results (like Americano)',
       resultsToggleHint: 'Without this it\'s just a schedule — no scores, no leaderboard.',
-      editPoolBeginner: 'Beginner Toss',
-      editPoolGevorderd: 'Advanced Toss',
+      editPoolBeginner: 'Silver',
+      editPoolErvaren: 'Gold',
+      editPoolGevorderd: 'Platinum',
       backToSettingsBtn: '← Change settings',
       modalRegenerateText: 'Generating a new schedule replaces the current one and any scores you\'ve entered. Are you sure?',
       confirmRegenerateBtn: 'Yes, generate new schedule',
@@ -1267,6 +1317,18 @@
       el.textContent = t(el.getAttribute('data-i18n'));
     });
     document.documentElement.lang = state.lang;
+    renderAppTitle();
+  }
+
+  // The heading names the format actually being played, so a printed or shared
+  // schedule says what it is without needing the setup screen for context.
+  function renderAppTitle(){
+    var key = state.format === 'splitToss' ? 'formatSplitToss'
+            : state.format === 'americano' ? 'formatAmericano'
+            : 'formatToss';
+    var el = document.getElementById('appTitle');
+    if (el) el.textContent = t(key);
+    document.title = t(key);
   }
 
   var state = {
@@ -1274,25 +1336,21 @@
     lang: 'nl',
     format: 'toss', // 'toss' | 'splitToss' | 'americano'
     playerCount: null,
-    beginnerCount: 8,
-    gevorderdCount: 8,
+    levelCounts: [8, 8, 0],        // beginners / ervaren / gevorderden (0 = level unused)
     courts: 2,
     rounds: 7,
     resultsEnabled: false,       // single-group (toss) results toggle
-    beginnerResultsEnabled: false,
-    gevorderdResultsEnabled: false,
+    levelResults: [false, false, false],
     regroupEnabled: false,
     splitRound: 4,
     names: [],
-    namesBeginner: [],
-    namesGevorderd: [],
+    levelNames: [[], [], []],
     activeRoster: [],
-    activeRosterBeginner: [],
-    activeRosterGevorderd: [],
+    activeRosterLevels: [[], [], []],
     pools: [],
     scores: {},
     splitDone: false,
-    boardHidden: { main: false, beginner: false, gevorderd: false },
+    boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
     laterAdditions: {} // name -> true, for players added via Edit Players after initial creation
   };
 
@@ -1310,29 +1368,25 @@
     return Math.max(1, Math.min(courtsAvailable, Math.floor(n / 4)));
   }
 
-  // A court allocation may be a single number (same every round) or an array
-  // holding one value per round (see allocateCourtsPerRound). The array is
-  // cycled rather than clamped, so if a pool is later extended past its
-  // original length the alternating pattern simply continues.
-  function courtsForRound(courtsAvailable, r){
-    if (Object.prototype.toString.call(courtsAvailable) === '[object Array]'){
-      if (!courtsAvailable.length) return 1;
-      return courtsAvailable[r % courtsAvailable.length];
-    }
-    return courtsAvailable;
-  }
-
-  // Minimum courts per format. Two groups playing at the same time physically
-  // need two courts; only the plain Toss (one group) can run on a single court.
-  function minCourtsForFormat(format){
-    return format === 'toss' ? 1 : 2;
-  }
-
   // Fully random global-pool scheduler. Optional `seed` carries prior history
   // ({rest, pairs, restDefault}) so a regenerated segment can take already-played
   // rounds into account rather than starting fresh.
+  // courtsAvailable may be a single number (same every round) or an array with
+  // one entry per round. The array form lets a group's court share rotate
+  // between rounds, which is how uneven group sizes get evened out over the
+  // course of the session rather than within a single round.
   function generateGlobalSchedule(players, rounds, roundOffset, courtsAvailable, seed){
     var n = players.length;
+    var perRoundCourts = [];
+    for (var rc = 0; rc < rounds; rc++){
+      var want = Array.isArray(courtsAvailable)
+        ? (courtsAvailable[rc] !== undefined ? courtsAvailable[rc] : courtsAvailable[courtsAvailable.length - 1])
+        : courtsAvailable;
+      // 0 is a legitimate allocation: it means this level sits the round out so
+      // the other level can use every court, which is how play time gets evened
+      // up when courts can't be divided fairly (see allocateCourtsPerRound).
+      perRoundCourts.push(want <= 0 ? 0 : usableCourts(n, want));
+    }
 
     // Fairness is tracked as cumulative PLAY count (not rest count). This matters
     // once history is seeded: a player who already has real games under their
@@ -1362,9 +1416,7 @@
 
     var out = [];
     for (var r = 0; r < rounds; r++){
-      // Court count can vary per round when two groups share an odd number of
-      // courts and the spare one alternates between them.
-      var activeCourts = usableCourts(n, courtsForRound(courtsAvailable, r));
+      var activeCourts = perRoundCourts[r];
       var slots = activeCourts * 4;
       var indices = shuffle(Array.from({ length: n }, function(_, i){ return i; }));
       indices.sort(function(a, b){ return playCount[a] - playCount[b]; }); // fewest games so far play first
@@ -1400,104 +1452,181 @@
     return out;
   }
 
-  // Splits the available courts between two groups for EVERY round, returning
-  // an array of [courtsA, courtsB] pairs — one per round.
-  //
-  // Court time is handed out in proportion to group size, which is exactly the
-  // allocation that gives every player the same chance of being on court
-  // (4*courts/size is equal for both groups when courts ∝ size). When the
-  // courts don't divide cleanly — 3 courts across two equal groups being the
-  // obvious case — the spare court cannot be halved, so instead of parking it
-  // permanently with one group (which made that group play twice as much) it
-  // ALTERNATES round by round. Error diffusion keeps the long-run share
-  // proportional no matter how many rounds are played.
-  //
-  // Each group is additionally capped at floor(size/4): a group can never be
-  // given more courts than it has players to fill. Any court neither group can
-  // use is simply left idle rather than double-booked.
-  // priorSlotsA/B are the total games already played by each group before this
-  // segment starts (used by the halftime regroup, where the two halves may
-  // arrive with slightly different game counts). Seeding them lets the group
-  // that is behind get the spare court more often until it catches up.
-  function allocateCourtsPerRound(totalCourts, sizeA, sizeB, rounds, priorSlotsA, priorSlotsB){
-    var capA = Math.max(1, Math.floor(sizeA / 4));
-    var capB = Math.max(1, Math.floor(sizeB / 4));
-    var total = Math.max(2, totalCourts); // two groups always need two courts
-    var out = [];
-    var slotsA = priorSlotsA || 0;
-    var slotsB = priorSlotsB || 0;
+  function splitCourtsBetween(totalCourts, sizeA, sizeB){
+    if (totalCourts < 2) return [totalCourts, totalCourts];
+    var totalSize = sizeA + sizeB;
+    var a = Math.round(totalCourts * (sizeA / totalSize));
+    a = Math.max(1, Math.min(totalCourts - 1, a));
+    var b = totalCourts - a;
+    return [a, b];
+  }
 
-    for (var r = 0; r < Math.max(1, rounds); r++){
-      // Both groups always get at least one court, so neither ever sits out a
-      // whole round while the other plays.
-      var a = 1, b = 1;
-      var spare = total - a - b;
+  // Games per player over the session = (courts granted x 4 x rounds) / players,
+  // so equal play time means each group's court share should track its share of
+  // the players. That ideal share is almost never a whole number, and a fixed
+  // rounding permanently over-serves one group. Instead the fractional part is
+  // rotated round by round: a group entitled to 1.7 courts gets 2 in most
+  // rounds and 1 in the rest, so the average lands on target.
+  //
+  // Every group keeps at least one court in every round -- in a split toss both
+  // levels are meant to be playing at the same time, so benching a whole level
+  // to balance the numbers would be a worse outcome than the imbalance itself.
+  // When the minimum-one rule alone uses up all the courts, no rotation is
+  // possible and the groups' play time genuinely cannot be equalised; the
+  // Step 1 preview flags that case so it can be fixed by adding a court or
+  // moving a player between levels.
+  // How many courts a group can actually fill (0 if it can't even fill one).
+  function courtCapacity(size, totalCourts){
+    return Math.min(totalCourts, Math.floor(size / 4));
+  }
 
-      // Hand every remaining court to whichever group can still fill it and is
-      // currently getting the least play per player. Courts are never left
-      // idle while a group could use them.
-      while (spare > 0 && (a < capA || b < capB)){
-        var rateA = (slotsA + a * 4) / sizeA;
-        var rateB = (slotsB + b * 4) / sizeB;
-        if (a < capA && (b >= capB || rateA <= rateB)) a++;
-        else if (b < capB) b++;
-        else break;
-        spare--;
+  // A level can only ever fill floor(players / 4) courts. Handing it more just
+  // leaves courts standing empty, so every round's allocation is capped at what
+  // each level can actually use and the freed courts are handed to the levels
+  // that still have room. Without this a court sits idle whenever the maths
+  // hands a level a court it cannot fill -- e.g. 4 courts split over 7 / 8 / 6
+  // players, where the 7-player level is entitled to ~1.4 courts but can only
+  // ever fill one.
+  function fitRoundToCapacity(alloc, caps, totalCourts, priority){
+    var i;
+    for (i = 0; i < alloc.length; i++){
+      if (alloc[i] > caps[i]) alloc[i] = caps[i];
+      if (alloc[i] < 0) alloc[i] = 0;
+    }
+    var used = 0;
+    for (i = 0; i < alloc.length; i++) used += alloc[i];
+    var guard = 0;
+    while (used < totalCourts && guard++ < 200){
+      var best = -1;
+      for (var j = 0; j < alloc.length; j++){
+        if (alloc[j] >= caps[j]) continue;
+        if (best < 0 || priority[j] > priority[best]) best = j;
       }
+      if (best < 0) break;   // every level is at capacity; the court can't be used
+      alloc[best] += 1;
+      used += 1;
+      priority[best] -= 1;
+    }
+    return alloc;
+  }
 
-      slotsA += a * 4;
-      slotsB += b * 4;
-      out.push([a, b]);
+  // Strategy 1: every level plays every round (at least one court each).
+  function allocEveryonePlays(totalCourts, sizes, rounds){
+    var n = sizes.length;
+    var caps = sizes.map(function(sz){ return courtCapacity(sz, totalCourts); });
+    var totalSize = sizes.reduce(function(x, y){ return x + y; }, 0);
+    var ideal = sizes.map(function(sz){ return totalCourts * (sz / totalSize); });
+    var base = ideal.map(function(v){ return Math.max(1, Math.floor(v)); });
+    var baseSum = base.reduce(function(x, y){ return x + y; }, 0);
+    if (baseSum > totalCourts){
+      // Not enough courts for every level to have one at the same time (e.g. a
+      // single court shared by two levels). Handing each of them a court anyway
+      // would schedule matches on courts that don't exist, so signal that this
+      // strategy is impossible and let the sit-out strategy alternate instead.
+      return null;
+    }
+    var spare = totalCourts - baseSum;
+    var want = ideal.map(function(v, i){ return v - base[i]; });
+    var carry = sizes.map(function(){ return 0; });
+    var out = sizes.map(function(){ return []; });
+    for (var r = 0; r < rounds; r++){
+      var alloc = base.slice();
+      for (var i = 0; i < n; i++) carry[i] += want[i];
+      for (var k = 0; k < spare; k++){
+        var best = 0;
+        for (var j = 1; j < n; j++){ if (carry[j] > carry[best]) best = j; }
+        alloc[best] += 1; carry[best] -= 1;
+      }
+      fitRoundToCapacity(alloc, caps, totalCourts, carry.slice());
+      for (var m = 0; m < n; m++) out[m].push(alloc[m]);
     }
     return out;
   }
 
-  // Pulls one group's per-round court counts out of an allocation plan.
-  function planColumn(plan, which){
-    return plan.map(function(pair){ return pair[which]; });
-  }
+  // Strategy 2: a level may sit out a whole round so the other level can take
+  // every court. This is the only way to even out play time when the courts
+  // cannot be divided in proportion to the group sizes -- e.g. 2 courts with 8
+  // beginners and 6 advanced, where both are stuck on one court each and the
+  // smaller group therefore plays more.
+  function allocWithSitOuts(totalCourts, sizes, rounds){
+    var n = sizes.length;
+    var caps = sizes.map(function(sz){ return courtCapacity(sz, totalCourts); });
+    var totalSize = sizes.reduce(function(x, y){ return x + y; }, 0);
 
-  // Physical court numbers. Group A occupies courts 1..cA of each round and
-  // group B continues from cA+1 — recomputed PER ROUND, so a round where the
-  // spare court changes hands still gets a clean, collision-free numbering.
-  function courtBasesFor(plan, which){
-    return plan.map(function(pair){ return which === 0 ? 1 : pair[0] + 1; });
-  }
-
-  // Stamps absolute court numbers onto generated rounds. startIdx is the
-  // round's offset within the pool, so a regenerated tail keeps the same
-  // alternation phase as the rounds already played.
-  function applyCourtBase(rounds, baseArr, startIdx){
-    for (var i = 0; i < rounds.length; i++){
-      var base = (baseArr && baseArr.length) ? baseArr[(startIdx + i) % baseArr.length] : 1;
-      for (var c = 0; c < rounds[i].courts.length; c++){
-        rounds[i].courts[c].courtIndex = base + c;
-      }
+    // Highest games-per-player every group could reach equally, limited both by
+    // total court time and by each group's own capacity to fill courts.
+    var g = 4 * totalCourts * rounds / totalSize;
+    for (var i = 0; i < n; i++){
+      if (sizes[i] > 0) g = Math.min(g, 4 * rounds * caps[i] / sizes[i]);
     }
+    var target = sizes.map(function(sz){ return g * sz / 4; }); // court-rounds owed
+    var got = sizes.map(function(){ return 0; });
+    var out = sizes.map(function(){ return []; });
+
+    // The opening rounds always have every level on court. A session that
+    // starts by telling one group to sit and watch reads as a mistake, however
+    // sound the arithmetic is -- the correction rounds are spread over the rest
+    // of the schedule instead, once play is clearly under way.
+    var PROTECTED_OPENING_ROUNDS = 2;
+
+    for (var r = 0; r < rounds; r++){
+      var alloc = sizes.map(function(){ return 0; });
+      var left = totalCourts;
+
+      if (r < PROTECTED_OPENING_ROUNDS){
+        for (var q = 0; q < n; q++){
+          if (left <= 0) break;
+          if (caps[q] >= 1){ alloc[q] = 1; left -= 1; }
+        }
+      }
+
+      while (left > 0){
+        var best = -1, bestDeficit = 0;
+        for (var k = 0; k < n; k++){
+          if (alloc[k] >= caps[k]) continue;
+          // Deficit expressed per player, so groups of different sizes compete fairly.
+          var deficit = sizes[k] > 0 ? (target[k] - got[k] - alloc[k]) / sizes[k] : 0;
+          if (deficit > bestDeficit){ bestDeficit = deficit; best = k; }
+        }
+        if (best < 0) break;
+        alloc[best] += 1; left -= 1;
+      }
+      // The greedy above only hands out courts to levels that are still owed
+      // play time; once nobody is owed any, remaining courts would sit empty.
+      // Give them to whoever can still use them -- extra games for a level that
+      // was going to sit out costs the others nothing.
+      var prio = [];
+      for (var q = 0; q < n; q++){
+        prio.push(sizes[q] > 0 ? (target[q] - got[q] - alloc[q]) / sizes[q] : 0);
+      }
+      fitRoundToCapacity(alloc, caps, totalCourts, prio);
+      for (var m = 0; m < n; m++){ got[m] += alloc[m]; out[m].push(alloc[m]); }
+    }
+    return out;
   }
 
-  // Safety net: no two matches in the same round may ever sit on the same
-  // physical court. Any collision is a scheduling bug — surface it loudly in
-  // the console rather than letting two groups turn up at the same court.
-  function assertNoCourtClashes(pools){
-    var byRound = {};
-    var clash = false;
-    pools.forEach(function(pool){
-      pool.rounds.forEach(function(rd){
-        rd.courts.forEach(function(c){
-          var k = rd.round + ':' + c.courtIndex;
-          if (byRound[k]){
-            clash = true;
-            if (window.console && console.error){
-              console.error('[scheduler] court clash in round ' + rd.round +
-                ' on court ' + c.courtIndex + ' between "' + byRound[k] + '" and "' + pool.id + '"');
-            }
-          }
-          byRound[k] = pool.id;
-        });
-      });
+  // Picks between the two strategies. Sitting a level out is only worth it if
+  // the WORST-OFF group actually ends up playing more; otherwise the "fairer"
+  // schedule would just be levelling everyone down to the unluckiest group,
+  // which nobody benefits from.
+  function allocateCourtsPerRound(totalCourts, sizes, rounds){
+    var everyone = allocEveryonePlays(totalCourts, sizes, rounds);
+    var sitOuts = allocWithSitOuts(totalCourts, sizes, rounds);
+    if (!everyone) return sitOuts;
+    var gEveryone = expectedGamesPerPlayer(everyone, sizes);
+    var gSitOuts = expectedGamesPerPlayer(sitOuts, sizes);
+    var worstEveryone = Math.min.apply(null, gEveryone);
+    var worstSitOuts = Math.min.apply(null, gSitOuts);
+    return (worstSitOuts > worstEveryone + 1e-9) ? sitOuts : everyone;
+  }
+
+  // Expected games per player per group, given a per-round court allocation.
+  function expectedGamesPerPlayer(allocation, sizes){
+    return allocation.map(function(arr, i){
+      var total = 0;
+      arr.forEach(function(c){ total += (c <= 0 ? 0 : usableCourts(sizes[i], c)) * 4; });
+      return sizes[i] > 0 ? total / sizes[i] : 0;
     });
-    return !clash;
   }
 
   // Builds a fairness seed from already-played (frozen) rounds, for the
@@ -1544,12 +1673,6 @@
     return a === b ? String(a) : (a + '\u2013' + b);
   }
 
-  // "2" when both ends match, "1\u20132" when a value alternates between rounds.
-  function rangeText(lo, hi){
-    var a = Math.min(lo, hi), b = Math.max(lo, hi);
-    return a === b ? String(a) : (a + '\u2013' + b);
-  }
-
   // ---------- step nav ----------
   function goToStep(n){
     state.step = n;
@@ -1576,15 +1699,32 @@
       state.lang = btn.getAttribute('data-lang');
       document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b === btn); });
       applyStaticTranslations();
-      syncCourtAvailability();
       renderCourtsPreview();
     });
   });
 
   // ---------- STEP 1 ----------
+  // The split-toss levels, in order. Everything downstream loops over this
+  // instead of naming the levels individually, so the count can change without
+  // touching the scheduling, leaderboard, play-count or roster-editing logic.
+  var LEVELS = [
+    { id: 'beginner',  cap: 'Beginner',  labelKey: 'beginnerLabel',  headingKey: 'beginnerPlayersHeading',  placeholderKey: 'namePlaceholderBeginner',  editKey: 'editPoolBeginner' },
+    { id: 'ervaren',   cap: 'Ervaren',   labelKey: 'ervarenLabel',   headingKey: 'ervarenPlayersHeading',   placeholderKey: 'namePlaceholderErvaren',   editKey: 'editPoolErvaren' },
+    { id: 'gevorderd', cap: 'Gevorderd', labelKey: 'gevorderdLabel', headingKey: 'gevorderdPlayersHeading', placeholderKey: 'namePlaceholderGevorderd', editKey: 'editPoolGevorderd' }
+  ];
+  function levelIndexById(id){
+    for (var i = 0; i < LEVELS.length; i++){ if (LEVELS[i].id === id) return i; }
+    return -1;
+  }
+  // Indices of the levels actually in play (a count of 0 means "not using this level").
+  function activeLevelIndexes(){
+    var out = [];
+    LEVELS.forEach(function(lv, i){ if (state.levelCounts[i] > 0) out.push(i); });
+    return out;
+  }
+
   var playerCountInput = document.getElementById('playerCountInput');
-  var beginnerCountInput = document.getElementById('beginnerCountInput');
-  var gevorderdCountInput = document.getElementById('gevorderdCountInput');
+  var levelCountInputs = LEVELS.map(function(lv){ return document.getElementById(lv.id + 'CountInput'); });
   var singlePlayersBlock = document.getElementById('singlePlayersBlock');
   var splitPlayersBlock = document.getElementById('splitPlayersBlock');
   var courtsPreview = document.getElementById('courtsPreview');
@@ -1593,30 +1733,49 @@
 
   function clampCount(v){
     if (isNaN(v)) v = 16;
-    return Math.max(4, Math.min(32, v));
+    return Math.max(4, Math.min(96, v));
+  }
+  // Levels may be 0 (unused); anything else has to be a workable 4-96.
+  function clampLevelCount(v){
+    if (isNaN(v) || v <= 0) return 0;
+    return Math.max(4, Math.min(96, v));
+  }
+  function readLevelCounts(){
+    return levelCountInputs.map(function(inp){
+      var raw = inp.value;
+      if (raw === '') return NaN;
+      var v = parseInt(raw, 10);
+      return isNaN(v) ? NaN : v;
+    });
+  }
+  function levelCountsValid(counts){
+    var used = 0;
+    for (var i = 0; i < counts.length; i++){
+      var v = counts[i];
+      if (isNaN(v) || v < 0 || v > 96) return false;
+      if (v > 0 && v < 4) return false;
+      // Levels are a ladder, so they're used in order: a gap (Silver + Platinum
+      // with no Gold) would leave the middle rung of the ladder missing, which
+      // makes the naming meaningless and the level order arbitrary.
+      if (v > 0 && i > 0 && !(counts[i - 1] > 0)) return false;
+      if (v > 0) used++;
+    }
+    return used >= 2;
   }
 
-  // Split Toss and Americano both run two groups at once (Beginner/Gevorderd,
-  // or Top/Bottom after the halftime regroup), which physically requires two
-  // courts. Only the plain Toss can run on one. Rather than silently
-  // double-booking a single court, the 1-court option is locked out for those
-  // formats and the selection is bumped up to the minimum.
-  function syncCourtAvailability(){
-    var min = minCourtsForFormat(state.format);
-    if (state.courts < min) state.courts = min;
-    document.querySelectorAll('.court-btn').forEach(function(b){
-      var c = parseInt(b.getAttribute('data-courts'), 10);
-      var blocked = c < min;
-      b.disabled = blocked;
-      b.classList.toggle('disabled', blocked);
-      b.setAttribute('aria-disabled', blocked ? 'true' : 'false');
-      b.classList.toggle('active', c === state.courts);
+  // Reflect that ladder in the controls: a level whose predecessor is unused is
+  // greyed out, so the rule is visible before it can be broken.
+  function syncLevelAvailability(){
+    var counts = readLevelCounts();
+    levelCountInputs.forEach(function(inp, i){
+      var blocked = i > 0 && !(counts[i - 1] > 0);
+      inp.disabled = blocked;
+      document.getElementById(LEVELS[i].id + 'CountMinus').disabled = blocked;
+      document.getElementById(LEVELS[i].id + 'CountPlus').disabled = blocked;
+      var col = inp.closest('.level-col');
+      if (col) col.classList.toggle('level-disabled', blocked);
+      if (blocked && inp.value !== '0') inp.value = 0;
     });
-    var note = document.getElementById('courtsMinNote');
-    if (note){
-      note.textContent = t('courtsMin2Note');
-      note.style.display = min > 1 ? '' : 'none';
-    }
   }
 
   document.querySelectorAll('.format-btn').forEach(function(btn){
@@ -1628,7 +1787,7 @@
       var isSplit = state.format === 'splitToss';
       singlePlayersBlock.style.display = isSplit ? 'none' : '';
       splitPlayersBlock.style.display = isSplit ? '' : 'none';
-      syncCourtAvailability();
+      renderAppTitle();
       renderCourtsPreview();
     });
   });
@@ -1639,42 +1798,123 @@
 
   function renderCourtsPreview(){
     if (state.format === 'splitToss'){
-      var bRaw = beginnerCountInput.value, gRaw = gevorderdCountInput.value;
-      var b = parseInt(bRaw, 10), g = parseInt(gRaw, 10);
-      var bValid = bRaw !== '' && !isNaN(b) && b >= 4 && b <= 32;
-      var gValid = gRaw !== '' && !isNaN(g) && g >= 4 && g <= 32;
-      var valid = bValid && gValid;
+      syncLevelAvailability();
+      var counts = readLevelCounts();
+      var valid = levelCountsValid(counts);
+      countError.textContent = t('levelCountError');
       countError.classList.toggle('visible', !valid);
       continueTo2Btn.disabled = !valid;
-      document.querySelectorAll('#chipRowBeginner .chip').forEach(function(chip){
-        chip.classList.toggle('active', bValid && parseInt(chip.getAttribute('data-count'), 10) === b);
-      });
-      document.querySelectorAll('#chipRowGevorderd .chip').forEach(function(chip){
-        chip.classList.toggle('active', gValid && parseInt(chip.getAttribute('data-count'), 10) === g);
-      });
       if (!valid){ courtsPreview.innerHTML = ''; return; }
 
-      // Two rounds is enough to see whether the spare court alternates.
-      var plan = allocateCourtsPerRound(state.courts, b, g, 2);
-      var bLo = Math.min(plan[0][0], plan[1][0]), bHi = Math.max(plan[0][0], plan[1][0]);
-      var gLo = Math.min(plan[0][1], plan[1][1]), gHi = Math.max(plan[0][1], plan[1][1]);
-      var alternates = (bLo !== bHi) || (gLo !== gHi);
+      var used = [];
+      counts.forEach(function(c, i){ if (c > 0) used.push(i); });
+      var sizes = used.map(function(i){ return counts[i]; });
 
-      var bRestText = (b - bHi * 4) > 0 ? tf('restingSuffix', { n: rangeText(b - bHi * 4, b - bLo * 4) }) : '';
-      var gRestText = (g - gHi * 4) > 0 ? tf('restingSuffix', { n: rangeText(g - gHi * 4, g - gLo * 4) }) : '';
+      var previewRounds = state.rounds || 7;
+      var alloc = allocateCourtsPerRound(state.courts, sizes, previewRounds);
+      var games = expectedGamesPerPlayer(alloc, sizes);
 
-      courtsPreview.innerHTML =
-        '<div class="courts-stat"><span class="courts-num">' + rangeText(bLo, bHi) + '</span><span class="courts-label">' + t('beginnerLabel') + '</span></div>' +
-        '<div class="courts-stat"><span class="courts-num">' + rangeText(gLo, gHi) + '</span><span class="courts-label">' + t('gevorderdLabel') + '</span></div>' +
-        '<p class="courts-note">' + t('beginnerLabel') + ': ' + tf('courtsNote', { slots: rangeText(bLo * 4, bHi * 4), resting: bRestText }) +
-        '<br>' + t('gevorderdLabel') + ': ' + tf('courtsNote', { slots: rangeText(gLo * 4, gHi * 4), resting: gRestText }) +
-        (alternates ? '<br><span class="courts-alt-note">' + t('courtsAlternateNote') + '</span>' : '') + '</p>';
+      // Per level: how many courts it gets when it plays, and in how many of
+      // the rounds it plays at all. Showing only the first round's figure was
+      // misleading whenever the allocation rotates.
+      var perLevel = used.map(function(levelIdx, k){
+        var effective = alloc[k].map(function(c){
+          return c <= 0 ? 0 : usableCourts(sizes[k], c);
+        });
+        var playing = effective.filter(function(c){ return c > 0; });
+        return {
+          levelIdx: levelIdx,
+          size: sizes[k],
+          minCourts: playing.length ? Math.min.apply(null, playing) : 0,
+          maxCourts: playing.length ? Math.max.apply(null, playing) : 0,
+          roundsPlaying: playing.length
+        };
+      });
+
+      // Fewer courts than levels means the levels can never all be on court at
+      // once -- they have to take turns, every single round. That is a very
+      // different thing from the occasional balancing sit-out, so it gets its
+      // own explanation rather than the "this round is different" wording.
+      var structural = used.length > state.courts;
+      var capacity = sizes.reduce(function(sum, sz){ return sum + courtCapacity(sz, state.courts); }, 0);
+      var unusable = state.courts - Math.min(state.courts, capacity);
+      var rotates = alloc.some(function(arr){ return arr.some(function(c){ return c !== arr[0]; }); });
+      var hasSitOuts = perLevel.some(function(L){ return L.roundsPlaying < previewRounds; });
+
+      var stats = '', lines = [];
+      perLevel.forEach(function(L){
+        var courtText = L.minCourts === L.maxCourts ? String(L.maxCourts) : (L.minCourts + '\u2013' + L.maxCourts);
+        var caption = t(LEVELS[L.levelIdx].labelKey);
+        if (L.roundsPlaying < previewRounds){
+          caption += ' \u00b7 ' + tf('levelPlaysRounds', { r: L.roundsPlaying, n: previewRounds });
+        }
+        stats += '<div class="courts-stat"><span class="courts-num">' + courtText +
+                 '</span><span class="courts-label">' + caption + '</span></div>';
+
+        // The court count can differ from round to round, so the number of
+        // players on court (and waiting) is a range rather than one figure.
+        var minSlots = L.minCourts * 4, maxSlots = L.maxCourts * 4;
+        var slotsText = minSlots === maxSlots ? String(maxSlots) : (minSlots + '\–' + maxSlots);
+        var restFew = L.size - maxSlots, restMany = L.size - minSlots;
+        var restText = '';
+        if (restMany > 0){
+          if (restFew === restMany) restText = tf('restingSuffix', { n: restMany });
+          else if (restFew <= 0) restText = tf('restingSuffixUpTo', { n: restMany });
+          else restText = tf('restingSuffixRange', { a: restFew, b: restMany });
+        }
+        if (L.roundsPlaying < previewRounds){
+          lines.push(tf('courtsNoteRotating', {
+            level: t(LEVELS[L.levelIdx].labelKey), r: L.roundsPlaying, n: previewRounds,
+            slots: slotsText, resting: restText
+          }));
+        } else {
+          lines.push(tf('courtsNoteLevel', {
+            level: t(LEVELS[L.levelIdx].labelKey), slots: slotsText, resting: restText
+          }));
+        }
+      });
+
+      var extra = '<br>' + t('courtsReshuffle');
+      if (unusable > 0){
+        extra += '<br><span class="courts-warn">' + tf('levelCapacityNote', {
+          usable: Math.min(state.courts, capacity), total: state.courts
+        }) + '</span>';
+      }
+      if (structural){
+        extra += '<br><span class="courts-warn">' + tf('courtsStructuralNote', {
+          levels: used.length,
+          courts: state.courts + ' ' + (state.courts === 1 ? t('courtUnitSingular') : t('courtUnitPlural')),
+          need: used.length + ' ' + (used.length === 1 ? t('courtUnitSingular') : t('courtUnitPlural'))
+        }) + '</span>';
+      } else if (hasSitOuts){
+        extra += '<br><span class="courts-fair">' + t('courtsSitOutNote') + '</span>';
+      } else if (rotates){
+        extra += '<br><span class="courts-fair">' + t('courtsRotateNote') + '</span>';
+      }
+      // One game's difference is just the normal rounding of a rotation -- with
+      // 4 rounds' worth of slots and an odd number of players somebody always
+      // ends up one ahead. Only flag it once the gap exceeds a full game, which
+      // is where players actually notice (3 games versus 5, not 4 versus 5).
+      var gap = Math.max.apply(null, games) - Math.min.apply(null, games);
+      if (gap > 1 + 1e-9){
+        var worstAt = 0;
+        games.forEach(function(g2, i2){ if (g2 < games[worstAt]) worstAt = i2; });
+        extra += '<br><span class="courts-warn">' + tf('courtsUnevenWarn', {
+          a: Math.round(Math.min.apply(null, games)),
+          b: Math.round(Math.max.apply(null, games)),
+          n: previewRounds,
+          group: t(LEVELS[used[worstAt]].labelKey)
+        }) + '</span>';
+      }
+
+      courtsPreview.innerHTML = stats + '<p class="courts-note">' + lines.join('<br>') + extra + '</p>';
       return;
     }
 
     var raw = playerCountInput.value;
     var v = parseInt(raw, 10);
-    var valid = raw !== '' && !isNaN(v) && v >= 4 && v <= 32;
+    var valid = raw !== '' && !isNaN(v) && v >= 4 && v <= 96;
+    countError.textContent = t('countError');
     countError.classList.toggle('visible', !valid);
     continueTo2Btn.disabled = !valid;
     document.querySelectorAll('.chip').forEach(function(chip){
@@ -1715,68 +1955,70 @@
     });
   });
 
-  beginnerCountInput.addEventListener('input', renderCourtsPreview);
-  document.getElementById('beginnerCountMinus').addEventListener('click', function(){
-    beginnerCountInput.value = clampCount(parseInt(beginnerCountInput.value, 10) - 1);
-    renderCourtsPreview();
-  });
-  document.getElementById('beginnerCountPlus').addEventListener('click', function(){
-    beginnerCountInput.value = clampCount(parseInt(beginnerCountInput.value, 10) + 1);
-    renderCourtsPreview();
-  });
-  // Quick-pick chips under each Split Toss count. Values are half of the
-  // single-pool chips, since Split Toss counts are per group rather than the
-  // whole field.
-  document.querySelectorAll('#chipRowBeginner .chip').forEach(function(chip){
-    chip.addEventListener('click', function(){
-      beginnerCountInput.value = chip.getAttribute('data-count');
+  LEVELS.forEach(function(lv, i){
+    var input = levelCountInputs[i];
+    input.addEventListener('input', renderCourtsPreview);
+    document.getElementById(lv.id + 'CountMinus').addEventListener('click', function(){
+      var cur = parseInt(input.value, 10);
+      // 1-3 players can never form a match, so stepping below the minimum of 4
+      // drops straight to 0 ("level not in use") instead of stalling at 4.
+      if (isNaN(cur) || cur <= 4) input.value = 0;
+      else input.value = clampLevelCount(cur - 1);
       renderCourtsPreview();
     });
-  });
-  document.querySelectorAll('#chipRowGevorderd .chip').forEach(function(chip){
-    chip.addEventListener('click', function(){
-      gevorderdCountInput.value = chip.getAttribute('data-count');
+    document.getElementById(lv.id + 'CountPlus').addEventListener('click', function(){
+      var cur = parseInt(input.value, 10);
+      // Stepping up from an unused level jumps straight to the 4 needed for a match.
+      input.value = (isNaN(cur) || cur <= 0) ? 4 : clampLevelCount(cur + 1);
       renderCourtsPreview();
     });
   });
 
-  gevorderdCountInput.addEventListener('input', renderCourtsPreview);
-  document.getElementById('gevorderdCountMinus').addEventListener('click', function(){
-    gevorderdCountInput.value = clampCount(parseInt(gevorderdCountInput.value, 10) - 1);
-    renderCourtsPreview();
-  });
-  document.getElementById('gevorderdCountPlus').addEventListener('click', function(){
-    gevorderdCountInput.value = clampCount(parseInt(gevorderdCountInput.value, 10) + 1);
-    renderCourtsPreview();
-  });
+  // The four buttons (1-4) and the "5 or more" dropdown are two halves of one
+  // control: picking either clears the other, so exactly one court count is
+  // ever selected regardless of which half the user reached for.
+  var courtsMoreSelect = document.getElementById('courtsMoreSelect');
+  var courtsMoreWrap = courtsMoreSelect.parentNode;
+
+  function syncCourtSelection(){
+    document.querySelectorAll('.court-btn').forEach(function(b){
+      b.classList.toggle('active', parseInt(b.getAttribute('data-courts'), 10) === state.courts);
+    });
+    var viaDropdown = state.courts > 4;
+    courtsMoreWrap.classList.toggle('active', viaDropdown);
+    courtsMoreSelect.value = viaDropdown ? String(state.courts) : '';
+  }
 
   document.querySelectorAll('.court-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
-      var picked = parseInt(btn.getAttribute('data-courts'), 10);
-      if (picked < minCourtsForFormat(state.format)) return; // locked out for this format
-      state.courts = picked;
-      document.querySelectorAll('.court-btn').forEach(function(b){
-        b.classList.toggle('active', b === btn);
-      });
+      state.courts = parseInt(btn.getAttribute('data-courts'), 10);
+      syncCourtSelection();
       renderCourtsPreview();
     });
   });
-  (function initCourtButton(){
-    var el = document.querySelector('.court-btn[data-courts="' + state.courts + '"]');
-    if (el) el.classList.add('active');
-    syncCourtAvailability();
-  })();
+
+  courtsMoreSelect.addEventListener('change', function(){
+    if (courtsMoreSelect.value === ''){
+      // Returning to the placeholder falls back to the highest button value,
+      // so the app is never left without a court count selected.
+      state.courts = 4;
+    } else {
+      state.courts = parseInt(courtsMoreSelect.value, 10);
+    }
+    syncCourtSelection();
+    renderCourtsPreview();
+  });
+
+  syncCourtSelection();
 
   continueTo2Btn.addEventListener('click', function(){
     if (state.format === 'splitToss'){
-      var b = parseInt(beginnerCountInput.value, 10);
-      var g = parseInt(gevorderdCountInput.value, 10);
-      if (isNaN(b) || b < 4 || b > 32 || isNaN(g) || g < 4 || g > 32){ renderCourtsPreview(); return; }
-      state.beginnerCount = b;
-      state.gevorderdCount = g;
+      var counts = readLevelCounts();
+      if (!levelCountsValid(counts)){ renderCourtsPreview(); return; }
+      state.levelCounts = counts.map(function(c){ return c > 0 ? c : 0; });
     } else {
       var v = parseInt(playerCountInput.value, 10);
-      if (isNaN(v) || v < 4 || v > 32){ renderCourtsPreview(); return; }
+      if (isNaN(v) || v < 4 || v > 96){ renderCourtsPreview(); return; }
       state.playerCount = v;
     }
     buildNameInputs();
@@ -1788,14 +2030,12 @@
 
   // ---------- STEP 2 ----------
   var namesGrid = document.getElementById('namesGrid');
-  var namesGridBeginner = document.getElementById('namesGridBeginner');
-  var namesGridGevorderd = document.getElementById('namesGridGevorderd');
+  var levelNamesGrids = LEVELS.map(function(lv){ return document.getElementById('namesGrid' + lv.cap); });
   var namesSingleBlock = document.getElementById('namesSingleBlock');
   var namesSplitBlock = document.getElementById('namesSplitBlock');
   var panel2Sub = document.getElementById('panel2Sub');
   var roundsInput = document.getElementById('roundsInput');
-  var beginnerResultsToggle = document.getElementById('beginnerResultsToggle');
-  var gevorderdResultsToggle = document.getElementById('gevorderdResultsToggle');
+  var levelResultsToggles = LEVELS.map(function(lv){ return document.getElementById(lv.id + 'ResultsToggle'); });
   var regroupToggle = document.getElementById('regroupToggle');
   var regroupField = document.getElementById('regroupField');
   var regroupHint = document.getElementById('regroupHint');
@@ -1831,6 +2071,40 @@
     var hasDup = markDuplicatesAmong(inputs);
     step2DupError.classList.toggle('visible', hasDup);
     return hasDup;
+  }
+
+  // Level names live in state.levelNames[i]; this adapts the generic grid
+  // builder (which works on a named state key) to that array-of-arrays.
+  function buildOneLevelNamesGrid(levelIdx){
+    var lv = LEVELS[levelIdx];
+    var count = state.levelCounts[levelIdx];
+    var gridEl = levelNamesGrids[levelIdx];
+    gridEl.innerHTML = '';
+    var existing = state.levelNames[levelIdx];
+    var preserve = Array.isArray(existing) && existing.length === count;
+    if (!preserve) state.levelNames[levelIdx] = new Array(count).fill('');
+    for (var i = 0; i < count; i++){
+      var field = document.createElement('div');
+      field.className = 'name-field';
+      var idx = document.createElement('span');
+      idx.className = 'idx';
+      idx.textContent = (i + 1);
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = preserve ? (state.levelNames[levelIdx][i] || '') : '';
+      input.placeholder = tf(lv.placeholderKey, { n: i + 1 });
+      input.setAttribute('data-i', i);
+      input.setAttribute('aria-label', tf(lv.placeholderKey, { n: i + 1 }));
+      input.addEventListener('input', function(e){
+        var i2 = parseInt(e.target.getAttribute('data-i'), 10);
+        state.levelNames[levelIdx][i2] = e.target.value;
+        checkStep2Duplicates();
+      });
+      field.appendChild(idx);
+      field.appendChild(input);
+      gridEl.appendChild(field);
+    }
+    checkStep2Duplicates();
   }
 
   function buildOneNamesGrid(gridEl, count, namesArrayKey, placeholderKey){
@@ -1877,32 +2151,6 @@
     regroupToggle.disabled = !canRegroup;
     regroupField.classList.toggle('disabled', !canRegroup);
     regroupHint.textContent = canRegroup ? t('regroupHintEnabled') : t('regroupHintDisabled');
-
-    // Some player/court combinations simply cannot be split evenly: if one
-    // half can't fill the courts it would be given (7 players can never fill
-    // 2 courts), that half ends up with materially less play time no matter
-    // how the courts are shared out. Warn before the organiser commits,
-    // because changing the court count usually removes the problem entirely.
-    var warn = document.getElementById('regroupBalanceWarn');
-    if (warn){
-      var show = false;
-      if (canRegroup){
-        var topN = Math.ceil(n / 2), botN = n - topN;
-        var pl = allocateCourtsPerRound(state.courts, topN, botN, 12);
-        var eT = 0, eB = 0;
-        pl.forEach(function(p){ eT += p[0]; eB += p[1]; });
-        var rateT = 4 * (eT / pl.length) / topN;
-        var rateB = 4 * (eB / pl.length) / botN;
-        var gap = Math.abs(rateT - rateB) / Math.max(rateT, rateB);
-        show = gap > 0.15;
-        if (show){
-          var less = rateT < rateB ? t('editPoolTop') : t('editPoolBottom');
-          warn.textContent = tf('regroupUnevenWarn', { pct: Math.round(gap * 100), group: less });
-        }
-      }
-      warn.style.display = show ? '' : 'none';
-    }
-
     if (!canRegroup){
       regroupToggle.checked = false;
       state.regroupEnabled = false;
@@ -1917,16 +2165,22 @@
     namesSplitBlock.style.display = isSplit ? '' : 'none';
 
     if (isSplit){
-      buildOneNamesGrid(namesGridBeginner, state.beginnerCount, 'namesBeginner', 'namePlaceholderBeginner');
-      buildOneNamesGrid(namesGridGevorderd, state.gevorderdCount, 'namesGevorderd', 'namePlaceholderGevorderd');
-      beginnerResultsToggle.checked = state.beginnerResultsEnabled;
-      gevorderdResultsToggle.checked = state.gevorderdResultsEnabled;
+      var used = activeLevelIndexes();
+      LEVELS.forEach(function(lv, i){
+        var group = document.getElementById('namesGroup' + lv.cap);
+        var inUse = state.levelCounts[i] > 0;
+        group.style.display = inUse ? '' : 'none';
+        if (inUse) buildOneLevelNamesGrid(i);
+        levelResultsToggles[i].checked = state.levelResults[i];
+      });
 
-      var nmPlan = allocateCourtsPerRound(state.courts, state.beginnerCount, state.gevorderdCount, 2);
-      var nbLo = Math.min(nmPlan[0][0], nmPlan[1][0]), nbHi = Math.max(nmPlan[0][0], nmPlan[1][0]);
-      var ngLo = Math.min(nmPlan[0][1], nmPlan[1][1]), ngHi = Math.max(nmPlan[0][1], nmPlan[1][1]);
-      panel2Sub.textContent = t('beginnerLabel') + ': ' + state.beginnerCount + ' (' + rangeText(nbLo, nbHi) + ' ' + (nbHi > 1 ? t('courtUnitPlural') : t('courtUnitSingular')) + ')  \u00b7  ' +
-        t('gevorderdLabel') + ': ' + state.gevorderdCount + ' (' + rangeText(ngLo, ngHi) + ' ' + (ngHi > 1 ? t('courtUnitPlural') : t('courtUnitSingular')) + ')';
+      var sizes = used.map(function(i){ return state.levelCounts[i]; });
+      var courtSplit = allocateCourtsPerRound(state.courts, sizes, state.rounds || 7);
+      panel2Sub.textContent = used.map(function(levelIdx, k){
+        var active = courtSplit[k][0] <= 0 ? 0 : usableCourts(sizes[k], courtSplit[k][0]);
+        return t(LEVELS[levelIdx].labelKey) + ': ' + sizes[k] + ' (' + active + ' ' +
+          (active > 1 ? t('courtUnitPlural') : t('courtUnitSingular')) + ')';
+      }).join('  \u00b7  ');
 
       regroupField.classList.add('collapsed');
       splitRoundField.classList.add('collapsed');
@@ -1955,11 +2209,10 @@
     }
   }
 
-  beginnerResultsToggle.addEventListener('change', function(e){
-    state.beginnerResultsEnabled = e.target.checked;
-  });
-  gevorderdResultsToggle.addEventListener('change', function(e){
-    state.gevorderdResultsEnabled = e.target.checked;
+  levelResultsToggles.forEach(function(toggle, i){
+    toggle.addEventListener('change', function(e){
+      state.levelResults[i] = e.target.checked;
+    });
   });
 
   function syncSplitRoundBounds(){
@@ -2015,15 +2268,19 @@
 
   function runGenerate(){
     if (state.format === 'splitToss'){
-      var trimmedB = state.namesBeginner.map(function(nm, i){
-        var val = (nm || '').trim();
-        return val ? val : tf('namePlaceholderBeginner', { n: i + 1 });
+      var rosters = activeLevelIndexes().map(function(levelIdx){
+        var lv = LEVELS[levelIdx];
+        return {
+          levelIdx: levelIdx,
+          names: (state.levelNames[levelIdx] || []).map(function(nm, i){
+            var val = (nm || '').trim();
+            // Placeholders are level-specific so two blank fields in different
+            // levels can never resolve to the same player identity.
+            return val ? val : tf(lv.placeholderKey, { n: i + 1 });
+          })
+        };
       });
-      var trimmedG = state.namesGevorderd.map(function(nm, i){
-        var val = (nm || '').trim();
-        return val ? val : tf('namePlaceholderGevorderd', { n: i + 1 });
-      });
-      buildScheduleSplit(trimmedB, trimmedG);
+      buildScheduleSplit(rosters);
     } else {
       var trimmed = state.names.map(function(nm, i){
         var val = (nm || '').trim();
@@ -2065,30 +2322,56 @@
     renderLeaderboard();
   }
 
-  function buildScheduleSplit(beginnerNames, gevorderdNames){
+  function buildScheduleSplit(rosters){
     var totalRounds = state.rounds;
     state.totalRoundsPlanned = totalRounds;
     state.splitDone = false;
-    state.activeRosterBeginner = beginnerNames.slice();
-    state.activeRosterGevorderd = gevorderdNames.slice();
 
-    var plan = allocateCourtsPerRound(state.courts, beginnerNames.length, gevorderdNames.length, totalRounds);
-    var planB = planColumn(plan, 0), planG = planColumn(plan, 1);
-    var baseB = courtBasesFor(plan, 0), baseG = courtBasesFor(plan, 1);
-    var beginnerPool = shuffle(beginnerNames);
-    var gevorderdPool = shuffle(gevorderdNames);
+    state.activeRosterLevels = [[], [], []];
+    rosters.forEach(function(r){ state.activeRosterLevels[r.levelIdx] = r.names.slice(); });
 
-    var beginnerRounds = generateGlobalSchedule(beginnerPool, totalRounds, 0, planB);
-    var gevorderdRounds = generateGlobalSchedule(gevorderdPool, totalRounds, 0, planG);
-    applyCourtBase(beginnerRounds, baseB, 0);
-    applyCourtBase(gevorderdRounds, baseG, 0);
+    // Court share rotates per round (and a level may sit a round out) so every
+    // level ends up with comparable play time even when the group sizes differ
+    // -- see allocateCourtsPerRound.
+    var sizes = rosters.map(function(r){ return r.names.length; });
+    var alloc = allocateCourtsPerRound(state.courts, sizes, totalRounds);
 
-    state.pools = [
-      { id: 'beginner', label: 'Beginner', players: beginnerPool.slice(), courts: planB, courtBase: baseB, resultsEnabled: state.beginnerResultsEnabled, startRound: 1, endRound: totalRounds, rounds: beginnerRounds },
-      { id: 'gevorderd', label: 'Gevorderd', players: gevorderdPool.slice(), courts: planG, courtBase: baseG, resultsEnabled: state.gevorderdResultsEnabled, startRound: 1, endRound: totalRounds, rounds: gevorderdRounds }
-    ];
+    var pools = rosters.map(function(r, k){
+      var pool = shuffle(r.names);
+      return {
+        levelIdx: r.levelIdx,
+        pool: pool,
+        courts: alloc[k],
+        rounds: generateGlobalSchedule(pool, totalRounds, 0, alloc[k])
+      };
+    });
+
+    // Court numbers run consecutively across the levels, and because each
+    // level's court count varies per round the offset has to be recomputed
+    // for every round. usableCourts() floors at 1, so a level sitting the
+    // round out (0 courts) is guarded explicitly rather than counted as one.
+    for (var r = 0; r < totalRounds; r++){
+      var offset = 0;
+      pools.forEach(function(entry){
+        entry.rounds[r].courts.forEach(function(c){ c.courtIndex += offset; });
+        offset += entry.courts[r] <= 0 ? 0 : usableCourts(entry.pool.length, entry.courts[r]);
+      });
+    }
+
+    state.pools = pools.map(function(entry){
+      var lv = LEVELS[entry.levelIdx];
+      return {
+        id: lv.id,
+        label: lv.cap,
+        players: entry.pool.slice(),
+        courts: entry.courts,
+        resultsEnabled: state.levelResults[entry.levelIdx],
+        startRound: 1,
+        endRound: totalRounds,
+        rounds: entry.rounds
+      };
+    });
     state.scores = {};
-    assertNoCourtClashes(state.pools);
 
     renderMeta();
     renderSchedule();
@@ -2100,8 +2383,9 @@
     m.style.display = 'flex';
     var parts = [];
     if (state.format === 'splitToss'){
-      parts.push('<span>' + t('beginnerLabel') + ': ' + state.beginnerCount + '</span>');
-      parts.push('<span>' + t('gevorderdLabel') + ': ' + state.gevorderdCount + '</span>');
+      activeLevelIndexes().forEach(function(i){
+        parts.push('<span>' + t(LEVELS[i].labelKey) + ': ' + state.levelCounts[i] + '</span>');
+      });
     } else {
       parts.push('<span>' + state.playerCount + ' ' + t('p1PlayersUnit') + '</span>');
     }
@@ -2118,8 +2402,8 @@
   function poolDisplayLabel(pool){
     if (pool.id === 'top') return t('poolLabelTop');
     if (pool.id === 'bottom') return t('poolLabelBottom');
-    if (pool.id === 'beginner') return t('beginnerLabel');
-    if (pool.id === 'gevorderd') return t('gevorderdLabel');
+    var li = levelIndexById(pool.id);
+    if (li >= 0) return t(LEVELS[li].labelKey);
     return pool.label;
   }
 
@@ -2241,9 +2525,37 @@
 
         if (pool.label){
           var lab = document.createElement('div');
-          lab.className = 'pool-label ' + (pool.id === 'top' || pool.id === 'beginner' ? 'top' : pool.id === 'bottom' || pool.id === 'gevorderd' ? 'bottom' : '');
+          // Colour by the level's name: the Americano halftime split produces
+          // a Gold and a Silver group, so those map onto the same colours.
+          var poolClass = '';
+          if (pool.id === 'beginner' || pool.id === 'bottom') poolClass = 'lv-silver';
+          else if (pool.id === 'ervaren' || pool.id === 'top') poolClass = 'lv-gold';
+          else if (pool.id === 'gevorderd') poolClass = 'lv-platinum';
+          lab.className = 'pool-label ' + poolClass;
           lab.textContent = poolDisplayLabel(pool);
           block.appendChild(lab);
+        }
+
+        // A level with no courts this round is sitting out on purpose, to even
+        // out play time across the levels. Say so explicitly, otherwise the
+        // round just looks broken.
+        if (!rd.courts.length && rd.resting && rd.resting.length){
+          var sitOut = document.createElement('div');
+          sitOut.className = 'sitout-note';
+          // With fewer courts than levels this is simply how every round looks,
+          // so calling it "different" would be wrong; only call it out as a
+          // one-off when the levels normally do all play at the same time.
+          var structuralShortage = state.pools.length > state.courts;
+          if (structuralShortage){
+            sitOut.innerHTML = '<b>' + tf('sitOutTurnTitle', { level: poolDisplayLabel(pool) }) + '</b> ' +
+              tf('sitOutTurnBody', {
+                levels: state.pools.length,
+                courts: state.courts + ' ' + (state.courts === 1 ? t('courtUnitSingular') : t('courtUnitPlural'))
+              });
+          } else {
+            sitOut.innerHTML = '<b>' + t('sitOutTitle') + '</b> ' + t('sitOutBody');
+          }
+          block.appendChild(sitOut);
         }
 
         var grid = document.createElement('div');
@@ -2283,8 +2595,8 @@
   }
 
   function activeRosterForPool(poolId){
-    if (poolId === 'beginner') return state.activeRosterBeginner;
-    if (poolId === 'gevorderd') return state.activeRosterGevorderd;
+    var li = levelIndexById(poolId);
+    if (li >= 0) return state.activeRosterLevels[li];
     return state.activeRoster;
   }
 
@@ -2329,17 +2641,28 @@
   // Out (removed) players always sink to the bottom, regardless of which
   // column is sorted or in which direction — the chosen sort only orders
   // within the "still active" and "out" groups separately.
+  // Player names nearly always end in a number ("Zilver 2", "Zilver 10"), and a
+  // plain text sort puts 10 before 2 because it compares character by character.
+  // Comparing numerically keeps 2 before 10, which is what anyone reading a
+  // player list expects.
+  function compareNames(a, b){
+    return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+  }
+
   function sortPlaycountRows(rows, sortState){
     var mult = sortState.dir === 'asc' ? 1 : -1;
     return rows.slice().sort(function(a, b){
       if ((a.group === 'out') !== (b.group === 'out')) return a.group === 'out' ? 1 : -1;
-      var av, bv;
-      if (sortState.col === 'played'){ av = a.played; bv = b.played; }
-      else if (sortState.col === 'group'){ av = playcountGroupLabel(a.group); bv = playcountGroupLabel(b.group); }
-      else { av = a.name.toLowerCase(); bv = b.name.toLowerCase(); }
-      if (av < bv) return -1 * mult;
-      if (av > bv) return 1 * mult;
-      return a.name.localeCompare(b.name);
+      var diff;
+      if (sortState.col === 'played'){
+        diff = a.played - b.played;
+      } else if (sortState.col === 'group'){
+        diff = compareNames(playcountGroupLabel(a.group), playcountGroupLabel(b.group));
+      } else {
+        diff = compareNames(a.name, b.name);
+      }
+      if (diff !== 0) return diff * mult;
+      return compareNames(a.name, b.name);
     });
   }
 
@@ -2423,10 +2746,7 @@
     container.innerHTML = '';
 
     if (state.format === 'splitToss'){
-      [
-        { id: 'beginner', label: t('beginnerLabel') },
-        { id: 'gevorderd', label: t('gevorderdLabel') }
-      ].forEach(function(g){
+      LEVELS.map(function(lv){ return { id: lv.id, label: t(lv.labelKey) }; }).forEach(function(g){
         var pool = state.pools.filter(function(p){ return p.id === g.id; })[0];
         if (!pool) return;
         var counts = computePlayCounts(g.id);
@@ -2495,21 +2815,14 @@
       if (roster.indexOf(name) === -1) totals[name].group = 'out';
     });
 
-    // Reference game count ("the proper amount") = the most common number of
-    // games played among still-active players in this scope.
-    //
-    // Ties are broken toward the SMALLER value, which makes scaling DOWN the
-    // primary correction and scaling UP the exception. That ordering matters:
-    // scaling down only ever interpolates within games a player actually
-    // played, whereas scaling up extrapolates a player's rate across games
-    // they never played, which amplifies the luck in a small sample. So when
-    // ordinary rotation splits the field evenly — half the group playing one
-    // extra game because the rounds didn't divide cleanly — the extra game is
-    // discounted away rather than the shorter run being inflated.
-    //
-    // Anyone who played MORE than the reference gets their points/diff scaled
-    // down proportionally, for a fair comparison against players who simply
-    // had fewer opportunities.
+    // Reference game count = the most common number of games played among
+    // still-active players in this scope (ties broken toward the LARGER
+    // value — ordinary fair rotation can easily produce an even split, e.g.
+    // exactly half the group resting one extra time when the rounds don't
+    // divide evenly; that's normal variance, not a disparity worth
+    // correcting). Anyone who played MORE than this gets their points/diff
+    // scaled down proportionally, for a fair comparison against players who
+    // simply had more opportunities.
     //
     // Below the reference, direction depends on WHY: a player who left (out)
     // or joined later chose/was dealt that shorter run deliberately, so
@@ -2520,39 +2833,17 @@
     // THEIR points get scaled UP to the reference too, marked distinctly
     // from a scale-down so it's clear which direction the adjustment went.
     var rowsArr = Object.keys(totals).map(function(k){ return totals[k]; });
-    // Only players who were there the whole time set the yardstick: someone
-    // who left or joined partway through played a different tournament and
-    // shouldn't define what "normal" looks like for everyone else.
-    var activeRows = rowsArr.filter(function(r){
-      return r.group !== 'out' && !state.laterAdditions[r.name] && r.played > 0;
-    });
-    var refPool = activeRows.length ? activeRows : rowsArr.filter(function(r){ return r.played > 0; });
-    if (!refPool.length) refPool = rowsArr;
-
+    var activeRows = rowsArr.filter(function(r){ return r.group !== 'out'; });
+    var refPool = activeRows.length ? activeRows : rowsArr;
     var freq = {};
     refPool.forEach(function(r){ freq[r.played] = (freq[r.played] || 0) + 1; });
-    var modeGames = 0, bestCount = -1, minGames = Infinity;
+    var referenceGames = 0, bestCount = -1;
     Object.keys(freq).forEach(function(k){
       var n = parseInt(k, 10);
-      if (n < minGames) minGames = n;
-      // Tie -> prefer the SMALLER count, so an even split is corrected by
-      // scaling the longer runs down rather than the shorter runs up.
-      if (freq[k] > bestCount || (freq[k] === bestCount && n < modeGames)){
-        bestCount = freq[k]; modeGames = n;
+      if (freq[k] > bestCount || (freq[k] === bestCount && n > referenceGames)){
+        bestCount = freq[k]; referenceGames = n;
       }
     });
-    if (!isFinite(minGames)) minGames = modeGames;
-
-    // Sit the reference at the BOTTOM of the normal-rotation band rather than
-    // at the mode. Ordinary rotation spreads the field over at most one game,
-    // so anyone inside that band is normalised by scaling the longer runs DOWN
-    // — which only ever interpolates within games actually played. Scaling up
-    // is reserved for players who fell genuinely further behind (more than one
-    // game under the mode, e.g. through the roster editor), where their own
-    // history really does have to be extended to compare them at all. Clamping
-    // at mode-1 stops a single unlucky player from dragging the whole table
-    // down to their sample size.
-    var referenceGames = Math.max(minGames, modeGames - 1);
 
     var recalculated = false;
     rowsArr.forEach(function(row){
@@ -2702,10 +2993,7 @@
     var panels = [];
 
     if (state.format === 'splitToss'){
-      [
-        { id: 'beginner', label: t('beginnerLabel') },
-        { id: 'gevorderd', label: t('gevorderdLabel') }
-      ].forEach(function(g){
+      LEVELS.map(function(lv){ return { id: lv.id, label: t(lv.labelKey) }; }).forEach(function(g){
         var pool = state.pools.filter(function(p){ return p.id === g.id; })[0];
         if (!pool || !pool.resultsEnabled) return;
         var result = computeTotals(g.id);
@@ -2754,29 +3042,9 @@
     var topPool = shuffle(topNames);
     var bottomPool = shuffle(bottomNames);
 
-    // Court time is split per round, with the spare court alternating between
-    // Top and Bottom — otherwise an odd court count (3 courts across two
-    // equal-sized halves) permanently hands the extra court to Top, and the
-    // Top group ends up playing up to twice as many games as the Bottom group.
-    // Seed the allocator with each half's games so far. Rank correlates a
-    // little with games played, so the Top half can arrive slightly ahead;
-    // feeding that history in lets the group that is behind draw the spare
-    // court more often until the whole field is level again.
-    var priorTop = 0, priorBottom = 0;
-    main.rounds.forEach(function(rd){
-      rd.courts.forEach(function(court){
-        court.team1.concat(court.team2).forEach(function(nm){
-          if (topNames.indexOf(nm) !== -1) priorTop++;
-          else if (bottomNames.indexOf(nm) !== -1) priorBottom++;
-        });
-      });
-    });
-
-    var plan = allocateCourtsPerRound(state.courts, topPool.length, bottomPool.length, remainingRounds, priorTop, priorBottom);
-    var topCourtsCount = planColumn(plan, 0);
-    var bottomCourtsCount = planColumn(plan, 1);
-    var topBase = courtBasesFor(plan, 0);
-    var bottomBase = courtBasesFor(plan, 1);
+    var courtAlloc = allocateCourtsPerRound(state.courts, [topPool.length, bottomPool.length], remainingRounds);
+    var topCourtsCount = courtAlloc[0];
+    var bottomCourtsCount = courtAlloc[1];
 
     // Seed with phase-1 history so fairness (who's played more/less, who's
     // already partnered/opposed whom) carries across the split instead of
@@ -2787,13 +3055,15 @@
 
     var topRounds = generateGlobalSchedule(topPool, remainingRounds, state.splitRoundStored, topCourtsCount, topSeed);
     var bottomRounds = generateGlobalSchedule(bottomPool, remainingRounds, state.splitRoundStored, bottomCourtsCount, bottomSeed);
-    applyCourtBase(topRounds, topBase, 0);
-    applyCourtBase(bottomRounds, bottomBase, 0);
+    // Top group's court count can vary per round, so offset per round.
+    bottomRounds.forEach(function(rd, i){
+      var offset = topCourtsCount[i] <= 0 ? 0 : usableCourts(topPool.length, topCourtsCount[i]);
+      rd.courts.forEach(function(c){ c.courtIndex += offset; });
+    });
 
-    state.pools.push({ id: 'top', label: 'Top', players: topNames, courts: topCourtsCount, courtBase: topBase, resultsEnabled: true, startRound: state.splitRoundStored + 1, endRound: state.totalRoundsPlanned, rounds: topRounds });
-    state.pools.push({ id: 'bottom', label: 'Bottom', players: bottomNames, courts: bottomCourtsCount, courtBase: bottomBase, resultsEnabled: true, startRound: state.splitRoundStored + 1, endRound: state.totalRoundsPlanned, rounds: bottomRounds });
+    state.pools.push({ id: 'top', label: 'Top', players: topNames, courts: topCourtsCount, resultsEnabled: true, startRound: state.splitRoundStored + 1, endRound: state.totalRoundsPlanned, rounds: topRounds });
+    state.pools.push({ id: 'bottom', label: 'Bottom', players: bottomNames, courts: bottomCourtsCount, resultsEnabled: true, startRound: state.splitRoundStored + 1, endRound: state.totalRoundsPlanned, rounds: bottomRounds });
     state.splitDone = true;
-    assertNoCourtClashes(state.pools);
 
     renderSchedule();
     renderLeaderboard();
@@ -2805,8 +3075,7 @@
   var editSingleBlock = document.getElementById('editSingleBlock');
   var editSplitBlockWrap = document.getElementById('editSplitBlockWrap');
   var editRosterList = document.getElementById('editRosterList');
-  var editRosterListBeginner = document.getElementById('editRosterListBeginner');
-  var editRosterListGevorderd = document.getElementById('editRosterListGevorderd');
+  var editRosterLists = LEVELS.map(function(lv){ return document.getElementById('editRosterList' + lv.cap); });
   var editStatus = document.getElementById('editStatus');
   var editError = document.getElementById('editError');
   var editAddBtn = document.getElementById('editAddBtn');
@@ -2815,8 +3084,8 @@
   function getPoolNameKey(poolId){
     if (poolId === 'top') return 'editPoolTop';
     if (poolId === 'bottom') return 'editPoolBottom';
-    if (poolId === 'beginner') return 'editPoolBeginner';
-    if (poolId === 'gevorderd') return 'editPoolGevorderd';
+    var li = levelIndexById(poolId);
+    if (li >= 0) return LEVELS[li].editKey;
     return 'editPoolMain';
   }
 
@@ -2938,14 +3207,15 @@
   }
 
   function renderEditRosterSplit(){
-    editRosterListBeginner.innerHTML = '';
-    editRosterListGevorderd.innerHTML = '';
-    editError.classList.remove('visible');
-    state.activeRosterBeginner.forEach(function(name){
-      editRosterListBeginner.appendChild(buildEditRow(name));
-    });
-    state.activeRosterGevorderd.forEach(function(name){
-      editRosterListGevorderd.appendChild(buildEditRow(name));
+    LEVELS.forEach(function(lv, li){
+      var listEl = editRosterLists[li];
+      listEl.innerHTML = '';
+      var group = document.getElementById('editGroup' + lv.cap);
+      var inUse = (state.activeRosterLevels[li] || []).length > 0 || state.levelCounts[li] > 0;
+      group.style.display = inUse ? '' : 'none';
+      (state.activeRosterLevels[li] || []).forEach(function(name){
+        listEl.appendChild(buildEditRow(name));
+      });
     });
     checkEditDuplicates();
   }
@@ -2974,13 +3244,11 @@
     editRosterList.appendChild(buildEditRow(null));
     checkEditDuplicates();
   });
-  document.getElementById('editAddBeginnerBtn').addEventListener('click', function(){
-    editRosterListBeginner.appendChild(buildEditRow(null));
-    checkEditDuplicates();
-  });
-  document.getElementById('editAddGevorderdBtn').addEventListener('click', function(){
-    editRosterListGevorderd.appendChild(buildEditRow(null));
-    checkEditDuplicates();
+  LEVELS.forEach(function(lv, li){
+    document.getElementById('editAdd' + lv.cap + 'Btn').addEventListener('click', function(){
+      editRosterLists[li].appendChild(buildEditRow(null));
+      checkEditDuplicates();
+    });
   });
 
   document.getElementById('editPlayersBtn').addEventListener('click', function(){
@@ -3121,18 +3389,12 @@
       }
     }
 
-    // Keep the regenerated tail on the same court-alternation phase as the
-    // rounds already played, so the spare court keeps changing hands correctly
-    // and the two groups never land on the same physical court.
-    var phase = cutRound - pool.startRound;
-    var courtsPlan = pool.courts;
-    if (Object.prototype.toString.call(courtsPlan) === '[object Array]' && courtsPlan.length){
-      var rotated = [];
-      for (var pi = 0; pi < courtsPlan.length; pi++) rotated.push(courtsPlan[(phase + pi) % courtsPlan.length]);
-      courtsPlan = rotated;
-    }
-
-    var generated = generateGlobalSchedule(shuffle(newRosterForPool), generousRounds, cutRound - 1, courtsPlan, seed);
+    // pool.courts is a per-round array for split-toss pools; take the slice that
+    // lines up with the rounds actually being regenerated so the rotation is kept.
+    var courtsForRegen = Array.isArray(pool.courts)
+      ? pool.courts.slice(cutRound - pool.startRound)
+      : pool.courts;
+    var generated = generateGlobalSchedule(shuffle(newRosterForPool), generousRounds, cutRound - 1, courtsForRegen, seed);
 
     var running = {};
     newRosterForPool.forEach(function(name){ running[name] = framePlay[name]; });
@@ -3150,7 +3412,6 @@
     }
 
     var newRounds = generated.slice(0, finalCount);
-    applyCourtBase(newRounds, pool.courtBase, phase);
     pool.rounds = frozenRounds.concat(newRounds);
     pool.endRound = (cutRound - 1) + finalCount;
     state.totalRoundsPlanned = Math.max(state.totalRoundsPlanned, pool.endRound);
@@ -3188,10 +3449,18 @@
 
   // ---- Split Toss (Beginner + Gevorderd) apply ----
   function applySplitRosterEdits(){
-    var groups = [
-      { poolId: 'beginner', listEl: editRosterListBeginner, oldRoster: state.activeRosterBeginner.slice(), rosterKey: 'activeRosterBeginner', placeholderKey: 'namePlaceholderBeginner' },
-      { poolId: 'gevorderd', listEl: editRosterListGevorderd, oldRoster: state.activeRosterGevorderd.slice(), rosterKey: 'activeRosterGevorderd', placeholderKey: 'namePlaceholderGevorderd' }
-    ];
+    // Only levels that are actually in play take part in the edit.
+    var groups = [];
+    LEVELS.forEach(function(lv, li){
+      if (!(state.activeRosterLevels[li] || []).length) return;
+      groups.push({
+        poolId: lv.id,
+        levelIdx: li,
+        listEl: editRosterLists[li],
+        oldRoster: state.activeRosterLevels[li].slice(),
+        placeholderKey: lv.placeholderKey
+      });
+    });
 
     var allRenameMap = {};
     var resolvedByGroup = [];
@@ -3207,7 +3476,7 @@
       var removedNames = g.oldRoster.filter(function(n){ return !seenOriginals[n]; });
 
       Object.keys(resolved.renameMap).forEach(function(k){ allRenameMap[k] = resolved.renameMap[k]; });
-      resolvedByGroup.push({ poolId: g.poolId, rosterKey: g.rosterKey, oldRoster: g.oldRoster, newRoster: resolved.newRoster, addedNames: resolved.addedNames, removedNames: removedNames });
+      resolvedByGroup.push({ poolId: g.poolId, levelIdx: g.levelIdx, oldRoster: g.oldRoster, newRoster: resolved.newRoster, addedNames: resolved.addedNames, removedNames: removedNames });
     }
 
     // Defense in depth: even though live UI checks already scan both groups
@@ -3234,7 +3503,7 @@
       if (!pool) continue;
       var ok = regeneratePoolIfNeeded(pool, gr.oldRoster, gr.removedNames, gr.addedNames);
       if (!ok) return false;
-      state[gr.rosterKey] = gr.newRoster;
+      state.activeRosterLevels[gr.levelIdx] = gr.newRoster;
     }
 
     return true;
@@ -3275,38 +3544,197 @@
     if (action) action();
   });
 
+  // ---------- Saving and loading a schedule ----------
+  // A schedule is nested data (levels, rounds, courts, teams, scores), so
+  // it is saved as JSON rather than CSV: CSV would have to flatten the nesting
+  // and could not be read back reliably. The file is a plain text file the
+  // organiser keeps themselves -- nothing is stored in the browser.
+  var SAVE_FORMAT = 'padel-scheduler';
+  var SAVE_VERSION = 1;
+
+  function buildSaveData(){
+    return {
+      format: SAVE_FORMAT,
+      version: SAVE_VERSION,
+      savedAt: new Date().toISOString(),
+      state: JSON.parse(JSON.stringify(state))
+    };
+  }
+
+  function saveSchedule(){
+    var data = buildSaveData();
+    var text = JSON.stringify(data, null, 2);
+    var stamp = new Date();
+    var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+    var name = 'padel-' + stamp.getFullYear() + pad(stamp.getMonth() + 1) + pad(stamp.getDate()) +
+               '-' + pad(stamp.getHours()) + pad(stamp.getMinutes()) + '.json';
+    try {
+      var blob = new Blob([text], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 0);
+      return true;
+    } catch (e){
+      return false;
+    }
+  }
+
+  // Only accept files this app wrote, and sanity-check the parts we rely on --
+  // a half-valid file restored into the UI would fail in confusing ways later.
+  function validateSaveData(data){
+    if (!data || typeof data !== 'object') return 'loadErrNotJson';
+    if (data.format !== SAVE_FORMAT) return 'loadErrWrongFile';
+    if (typeof data.version !== 'number' || data.version > SAVE_VERSION) return 'loadErrVersion';
+    var st = data.state;
+    if (!st || typeof st !== 'object') return 'loadErrCorrupt';
+    if (['toss', 'splitToss', 'americano'].indexOf(st.format) === -1) return 'loadErrCorrupt';
+    if (!Array.isArray(st.pools)) return 'loadErrCorrupt';
+    if (!Array.isArray(st.levelCounts) || st.levelCounts.length !== LEVELS.length) return 'loadErrCorrupt';
+    for (var i = 0; i < st.pools.length; i++){
+      var pool = st.pools[i];
+      if (!pool || !Array.isArray(pool.players) || !Array.isArray(pool.rounds)) return 'loadErrCorrupt';
+    }
+    return null;
+  }
+
+  function applyLoadedState(st){
+    state = st;
+    // Fill in anything an older save might not carry, so the UI never reads undefined.
+    if (!state.boardHidden) state.boardHidden = { main: false, beginner: false, ervaren: false, gevorderd: false };
+    if (!state.laterAdditions) state.laterAdditions = {};
+    if (!Array.isArray(state.levelResults)) state.levelResults = [false, false, false];
+    if (!Array.isArray(state.levelNames)) state.levelNames = [[], [], []];
+    if (!Array.isArray(state.activeRosterLevels)) state.activeRosterLevels = [[], [], []];
+    if (!Array.isArray(state.activeRoster)) state.activeRoster = [];
+    if (!state.scores) state.scores = {};
+
+    // Put every control back in step with the restored state.
+    document.querySelectorAll('.format-btn').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-format') === state.format);
+    });
+    var isSplit = state.format === 'splitToss';
+    singlePlayersBlock.style.display = isSplit ? 'none' : '';
+    splitPlayersBlock.style.display = isSplit ? '' : 'none';
+    if (state.playerCount) playerCountInput.value = state.playerCount;
+    levelCountInputs.forEach(function(inp, i){ inp.value = state.levelCounts[i]; });
+    levelResultsToggles.forEach(function(tg, i){ tg.checked = !!state.levelResults[i]; });
+    roundsInput.value = state.rounds;
+    regroupToggle.checked = !!state.regroupEnabled;
+    regroupField.classList.toggle('collapsed', state.format === 'splitToss');
+    splitRoundInput.value = state.splitRound || 4;
+    splitRoundField.classList.toggle('collapsed', !state.regroupEnabled);
+    syncCourtSelection();
+    renderAppTitle();
+    renderCourtsPreview();
+
+    playcountVisible = false;
+    playcountPanel.style.display = 'none';
+    playcountToggleBtn.textContent = t('playcountToggleShow');
+    document.getElementById('playcountTables').innerHTML = '';
+
+    if (state.pools.length){
+      renderMeta();
+      renderSchedule();
+      renderLeaderboard();
+      goToStep(3);
+    } else {
+      document.getElementById('metaStrip').style.display = 'none';
+      document.getElementById('roundsCol').innerHTML = '';
+      document.getElementById('boardCol').innerHTML = '';
+      goToStep(1);
+    }
+  }
+
+  function loadScheduleFromText(text){
+    var loadError = document.getElementById('loadError');
+    var data;
+    try { data = JSON.parse(text); }
+    catch (e){
+      loadError.textContent = t('loadErrNotJson');
+      loadError.classList.add('visible');
+      return false;
+    }
+    var problem = validateSaveData(data);
+    if (problem){
+      loadError.textContent = t(problem);
+      loadError.classList.add('visible');
+      return false;
+    }
+    loadError.classList.remove('visible');
+    applyLoadedState(data.state);
+    return true;
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', function(){
+    saveSchedule();
+  });
+
+  var loadFileInput = document.getElementById('loadFileInput');
+  document.getElementById('loadBtn').addEventListener('click', function(){
+    document.getElementById('loadError').classList.remove('visible');
+    loadFileInput.value = '';
+    loadFileInput.click();
+  });
+  loadFileInput.addEventListener('change', function(){
+    var file = loadFileInput.files && loadFileInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){ loadScheduleFromText(String(reader.result)); };
+    reader.onerror = function(){
+      var le = document.getElementById('loadError');
+      le.textContent = t('loadErrRead');
+      le.classList.add('visible');
+    };
+    reader.readAsText(file);
+  });
+
   function doStartOver(){
     var keepLang = state.lang;
     state = {
       step: 1, lang: keepLang, format: 'toss',
-      playerCount: null, beginnerCount: 8, gevorderdCount: 8,
+      playerCount: null, levelCounts: [8, 8, 0],
       courts: 2, rounds: 7,
-      resultsEnabled: false, beginnerResultsEnabled: false, gevorderdResultsEnabled: false,
+      resultsEnabled: false, levelResults: [false, false, false],
       regroupEnabled: false, splitRound: 4,
-      names: [], namesBeginner: [], namesGevorderd: [],
-      activeRoster: [], activeRosterBeginner: [], activeRosterGevorderd: [],
+      names: [], levelNames: [[], [], []],
+      activeRoster: [], activeRosterLevels: [[], [], []],
       pools: [], scores: {}, splitDone: false,
-      boardHidden: { main: false, beginner: false, gevorderd: false },
+      boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
       laterAdditions: {}
     };
     playcountSort = {};
     roundsInput.value = 7;
-    beginnerResultsToggle.checked = false;
-    gevorderdResultsToggle.checked = false;
     regroupField.classList.add('collapsed');
     regroupToggle.checked = false;
     splitRoundField.classList.add('collapsed');
     splitRoundInput.value = 4;
     playerCountInput.value = 16;
-    beginnerCountInput.value = 8;
-    gevorderdCountInput.value = 8;
+    levelCountInputs.forEach(function(inp, i){ inp.value = state.levelCounts[i]; });
+    levelResultsToggles.forEach(function(tg){ tg.checked = false; });
     singlePlayersBlock.style.display = '';
     splitPlayersBlock.style.display = 'none';
     document.querySelectorAll('.format-btn').forEach(function(b){
       b.classList.toggle('active', b.getAttribute('data-format') === state.format);
     });
-    syncCourtAvailability();
+    syncCourtSelection();
+    renderAppTitle();
     renderCourtsPreview();
+
+    // Clear the previous schedule out of the DOM as well as out of state.
+    // Step 3 is hidden after a restart so nothing stale is visible, but leaving
+    // the old rounds, leaderboards and play-count panel lying around means a
+    // half-finished restart could still surface them.
+    document.getElementById('roundsCol').innerHTML = '';
+    document.getElementById('boardCol').innerHTML = '';
+    document.getElementById('playcountTables').innerHTML = '';
+    playcountVisible = false;
+    playcountPanel.style.display = 'none';
+    playcountToggleBtn.textContent = t('playcountToggleShow');
+
     document.getElementById('metaStrip').style.display = 'none';
     goToStep(1);
   }
