@@ -1,0 +1,3769 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Toss / Americano</title>
+<!-- Fonts: system fallbacks only (no external font fetch), for reliability on restricted/sandboxed viewers -->
+<style>
+  :root{
+    /* Athlon palette. --teal-900 is Athlon's primary navy (#1C437D, taken
+       from Athlon's own site theme-color); the other steps are derived
+       tints/shades of it. Variable names are kept from the original theme
+       so the rest of the stylesheet needs no changes. All foreground/
+       background pairs were checked against WCAG AA. */
+    --teal-900:#1C437D;
+    --teal-700:#27568F;
+    --teal-600:#3670AE;
+    --mist:#EEF3FA;
+    --surface:#FFFFFF;
+    --ball:#FFC72C;
+    --ball-dark:#7A6000;
+    --coral:#C7443A;
+    --ink:#12233D;
+    --ink-soft:#54688A;
+    --line:#D5E0EE;
+    /* Level colours picked to match the metal each level is named after,
+       while still clearing WCAG AA against both the page and white. */
+    --lv-silver:#63717F;
+    --lv-gold:#7A6000;
+    --lv-platinum:#2E6E8E;
+    --lv-silver-on-dark:#C9D3DD;
+
+    --font-display:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-body:system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    --font-mono:ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+
+    /* Consolidated type scale — a handful of sizes reused everywhere,
+       instead of a different size per element. */
+    --fs-2xs:11px;   /* table headers, tags, waiting/resting lists, tiny labels */
+    --fs-xs:12.5px;  /* hints, captions, secondary descriptions */
+    --fs-sm:13.5px;  /* compact data: table cells, chips, meta info */
+    --fs-base:15px;  /* body copy, inputs, and ALL clickable buttons/labels */
+    --fs-md:16.5px;  /* sub-headings, court labels, group headers */
+    --fs-lg:19px;    /* card/board headings, round numbers */
+  }
+
+  *{ box-sizing:border-box; }
+  html{ -webkit-text-size-adjust:100%; }
+  body{
+    margin:0;
+    background:var(--mist);
+    color:var(--ink);
+    font-family:var(--font-body);
+    line-height:1.45;
+    -webkit-font-smoothing:antialiased;
+  }
+  :focus-visible{ outline:3px solid var(--teal-600); outline-offset:2px; }
+
+  .wrap{
+    max-width:1180px;
+    margin:0 auto;
+    padding:28px 20px 80px;
+  }
+
+  /* ---------- Header ---------- */
+  .masthead{
+    display:flex;
+    align-items:baseline;
+    justify-content:space-between;
+    gap:16px;
+    flex-wrap:wrap;
+    margin-bottom:28px;
+    padding-bottom:18px;
+    border-bottom:2px solid var(--teal-900);
+  }
+  .brand{ display:flex; align-items:baseline; gap:12px; }
+  .brand h1{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(24px, 4vw, 34px);
+    letter-spacing:0.01em;
+    margin:0;
+    color:var(--teal-900);
+    text-transform:uppercase;
+  }
+  .brand .ball-dot{
+    display:inline-block;
+    width:12px; height:12px;
+    background:var(--ball);
+    border-radius:50%;
+    border:2px solid var(--teal-900);
+    transform:translateY(-2px);
+  }
+  .meta-strip{
+    font-family:var(--font-mono);
+    font-size:var(--fs-sm);
+    color:var(--teal-700);
+    display:flex;
+    gap:14px;
+    flex-wrap:wrap;
+  }
+  .meta-strip span{ background:var(--surface); border:1px solid var(--line); padding:4px 10px; border-radius:20px; }
+
+  /* ---------- Language switch ---------- */
+  .lang-switch{ display:flex; gap:6px; margin-bottom:20px; }
+  .lang-btn{
+    font-family:var(--font-mono);
+    font-size:var(--fs-sm);
+    font-weight:600;
+    padding:6px 14px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    color:var(--ink-soft);
+    cursor:pointer;
+  }
+  .lang-btn.active{ background:var(--teal-900); border-color:var(--teal-900); color:var(--ball); }
+
+  /* ---------- Step progress ---------- */
+  .steps{
+    display:flex;
+    gap:8px;
+    margin-bottom:34px;
+    font-family:var(--font-mono);
+    font-size:var(--fs-xs);
+    color:var(--ink-soft);
+  }
+  .steps .step{
+    display:flex; align-items:center; gap:8px;
+    padding:6px 12px 6px 6px;
+    border-radius:20px;
+    background:var(--surface);
+    border:1px solid var(--line);
+  }
+  .steps .step.active{ border-color:var(--teal-900); color:var(--teal-900); font-weight:600; }
+  .steps .step.done{ color:var(--teal-600); }
+  .steps .num{
+    width:20px; height:20px; border-radius:50%;
+    background:var(--mist);
+    display:flex; align-items:center; justify-content:center;
+    font-size:var(--fs-2xs); font-weight:700;
+  }
+  .steps .step.active .num{ background:var(--ball); color:var(--teal-900); }
+  .steps .step.done .num{ background:var(--teal-600); color:#fff; }
+
+  .panel{ display:none; }
+  .panel.visible{ display:block; }
+
+  h2.panel-title{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:clamp(20px, 3vw, 26px);
+    text-transform:uppercase;
+    letter-spacing:0.01em;
+    color:var(--teal-900);
+    margin:0 0 6px;
+  }
+  .panel-sub{ color:var(--ink-soft); margin:0 0 26px; font-size:var(--fs-base); }
+
+  .sub-heading{
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:var(--fs-md);
+    color:var(--teal-900);
+    margin:0 0 12px;
+  }
+
+  /* ---------- Step 1: flexible count input ---------- */
+  .count-input-row{ display:flex; align-items:center; gap:0; margin-bottom:18px; }
+  .count-input-row .stepper-btn{
+    width:44px; height:52px;
+    border:2px solid var(--teal-900);
+    background:var(--teal-900);
+    color:#fff;
+    font-family:var(--font-mono);
+    font-size:20px;
+    cursor:pointer;
+  }
+  .count-input-row .stepper-btn:first-child{ border-radius:10px 0 0 10px; }
+  .count-input-row .stepper-btn:last-of-type{ border-radius:0 10px 10px 0; }
+  #playerCountInput, #beginnerCountInput, #ervarenCountInput, #gevorderdCountInput{
+    width:110px; height:52px;
+    text-align:center;
+    border:2px solid var(--teal-900);
+    border-left:none; border-right:none;
+    font-family:var(--font-mono);
+    font-size:28px;
+    font-weight:700;
+    color:var(--teal-900);
+    background:var(--surface);
+  }
+  .count-input-label{
+    margin-left:14px;
+    font-family:var(--font-body);
+    font-size:var(--fs-base);
+    color:var(--ink-soft);
+  }
+
+  .chip-row{ display:flex; gap:8px; flex-wrap:wrap; margin-bottom:26px; }
+  .chip{
+    font-family:var(--font-mono);
+    font-size:var(--fs-sm);
+    padding:7px 14px;
+    border-radius:20px;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    color:var(--teal-700);
+    cursor:pointer;
+  }
+  .chip:hover{ border-color:var(--teal-600); }
+  .chip.active{ background:var(--teal-900); border-color:var(--teal-900); color:var(--ball); }
+
+  /* ---------- Format selector ---------- */
+  .format-select{ display:flex; gap:12px; flex-wrap:wrap; margin-bottom:26px; }
+  .format-btn{
+    flex:1;
+    min-width:150px;
+    padding:16px 16px;
+    border-radius:12px;
+    border:2px solid var(--line);
+    background:var(--surface);
+    cursor:pointer;
+    text-align:left;
+    display:flex;
+    flex-direction:column;
+    justify-content:flex-start;
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .format-btn:hover{ border-color:var(--teal-600); }
+  .format-btn .fb-name{ font-family:var(--font-display); font-weight:800; font-size:var(--fs-base); color:var(--teal-900); text-transform:uppercase; letter-spacing:.02em; margin-bottom:4px; }
+  .format-btn .fb-desc{ font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.35; }
+  .format-btn.active{ border-color:var(--teal-900); background:var(--teal-900); }
+  .format-btn.active .fb-name{ color:var(--ball); }
+  .format-btn.active .fb-desc{ color:#AFC6E4; }
+
+  /* ---------- Dual group (Beginner / Gevorderd) blocks ---------- */
+  .dual-group{ margin-bottom:24px; }
+  .dual-group-head{
+    font-family:var(--font-display);
+    font-weight:800;
+    font-size:var(--fs-md);
+    text-transform:uppercase;
+    letter-spacing:.03em;
+    color:var(--teal-900);
+    margin:0 0 12px;
+    padding-bottom:8px;
+    border-bottom:2px solid var(--line);
+  }
+  .dual-group-head.lv-silver{ color:var(--lv-silver); }
+  .dual-group-head.lv-gold{ color:var(--lv-gold); }
+  .dual-group-head.lv-platinum{ color:var(--lv-platinum); }
+  .level-columns{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:18px; }
+  .level-hint{ margin:10px 0 0; font-size:var(--fs-xs); color:var(--ink-soft); line-height:1.5; max-width:70ch; }
+  .level-col.level-disabled{ opacity:.45; }
+  .level-col.level-disabled .stepper-btn{ cursor:not-allowed; }
+  .dual-columns{ display:grid; grid-template-columns:1fr; gap:22px; }
+  @media (min-width:760px){ .dual-columns{ grid-template-columns:1fr 1fr; } }
+
+  .courts-select{ display:flex; gap:10px; margin-bottom:8px; flex-wrap:wrap; }
+  .court-btn{
+    flex:0 1 auto;
+    min-width:76px;
+    max-width:110px;
+    padding:16px 10px;
+    border-radius:12px;
+    border:2px solid var(--line);
+    background:var(--surface);
+    cursor:pointer;
+    text-align:center;
+    font-family:var(--font-mono);
+    transition:border-color .15s ease, transform .1s ease;
+  }
+  .court-btn:hover{ border-color:var(--teal-600); }
+  .court-btn .cb-num{ font-size:28px; font-weight:700; color:var(--teal-900); line-height:1; }
+  .court-btn .cb-label{ font-size:var(--fs-xs); color:var(--ink-soft); text-transform:uppercase; letter-spacing:.05em; margin-top:4px; }
+  .court-btn.active{ border-color:var(--teal-900); background:var(--teal-900); }
+  .court-btn.active .cb-num{ color:var(--ball); }
+  .court-btn.active .cb-label{ color:#AFC6E4; }
+
+  .courts-more{
+    display:flex; flex-direction:column; justify-content:center; gap:4px;
+    padding-left:6px;
+  }
+  .courts-more label{
+    font-family:var(--font-mono);
+    font-size:var(--fs-2xs);
+    text-transform:uppercase;
+    letter-spacing:.05em;
+    color:var(--ink-soft);
+  }
+  .courts-more select{
+    font-family:var(--font-mono);
+    font-size:var(--fs-base);
+    padding:10px 12px;
+    border-radius:10px;
+    border:2px solid var(--line);
+    background:var(--surface);
+    color:var(--teal-900);
+    cursor:pointer;
+    min-width:118px;
+  }
+  .courts-more select:hover{ border-color:var(--teal-600); }
+  .courts-more.active select{
+    border-color:var(--teal-900);
+    background:var(--teal-900);
+    color:var(--ball);
+    font-weight:700;
+  }
+
+  .courts-preview{
+    display:flex; align-items:baseline; gap:18px; flex-wrap:wrap;
+    background:var(--surface);
+    border:1.5px solid var(--teal-700);
+    border-radius:12px;
+    padding:16px 20px;
+    margin:22px 0 6px;
+    min-height:34px;
+  }
+  .courts-stat{ display:flex; align-items:baseline; gap:8px; }
+  .courts-stat .courts-label{ max-width:15ch; }
+  .courts-stat .courts-num{ font-family:var(--font-mono); font-size:28px; font-weight:700; color:var(--teal-900); line-height:1; }
+  .courts-stat .courts-label{ font-family:var(--font-body); font-size:var(--fs-xs); color:var(--ink-soft); }
+  .courts-note{ margin:0; font-size:var(--fs-sm); color:var(--ink-soft); flex:1; min-width:200px; }
+  .courts-note b{ color:var(--coral); }
+  .courts-note .courts-fair{ color:var(--ink-soft); }
+  .courts-note .courts-warn{ color:var(--coral); font-weight:600; }
+
+  /* ---------- Step 2 ---------- */
+  .settings-row{
+    display:flex; gap:24px; flex-wrap:wrap;
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    margin-bottom:24px;
+  }
+  .field-group{ display:flex; flex-direction:column; gap:8px; }
+  .field-group label{ font-size:var(--fs-xs); font-weight:600; color:var(--teal-900); text-transform:uppercase; letter-spacing:.04em; }
+  .stepper{ display:flex; align-items:center; gap:0; }
+  .stepper button{
+    width:32px; height:32px;
+    border:1px solid var(--teal-900);
+    background:var(--teal-900);
+    color:#fff;
+    font-family:var(--font-mono);
+    font-size:18px;
+    cursor:pointer;
+  }
+  .stepper button:disabled{ opacity:.4; cursor:not-allowed; }
+  .stepper button:first-child{ border-radius:6px 0 0 6px; }
+  .stepper button:last-child{ border-radius:0 6px 6px 0; }
+  .stepper input{
+    width:50px; height:32px;
+    text-align:center;
+    border:1px solid var(--teal-900);
+    border-left:none; border-right:none;
+    font-family:var(--font-mono);
+    font-size:var(--fs-base);
+    color:var(--ink);
+  }
+  .toggle-row{ display:flex; align-items:center; gap:10px; }
+  .toggle-row input[type=checkbox]{ width:18px; height:18px; accent-color:var(--teal-600); }
+  .toggle-row label{ text-transform:none; font-weight:500; color:var(--ink); font-size:var(--fs-base); }
+  .hint{ font-size:var(--fs-xs); color:var(--ink-soft); max-width:240px; }
+  .field-group.disabled label, .field-group.disabled .hint{ opacity:.55; }
+  .field-group.collapsed{ display:none; }
+
+  .names-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(190px, 1fr));
+    gap:12px;
+    margin-bottom:26px;
+  }
+  .name-field{ position:relative; }
+  .name-field .idx{
+    position:absolute; left:12px; top:50%; transform:translateY(-50%);
+    font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--ink-soft);
+  }
+  .name-field input{
+    width:100%;
+    padding:11px 12px 11px 32px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    font-family:var(--font-body);
+    font-size:var(--fs-base);
+    background:var(--surface);
+    color:var(--ink);
+  }
+  .name-field input:focus{ border-color:var(--teal-600); }
+  .name-field input.dup-name-input{ border-color:var(--coral); background:#FDF1F0; }
+
+  .actions-row{ display:flex; gap:12px; align-items:center; flex-wrap:wrap; }
+  .btn{
+    font-family:var(--font-body);
+    font-weight:700;
+    font-size:var(--fs-base);
+    padding:12px 22px;
+    border-radius:8px;
+    border:2px solid var(--teal-900);
+    cursor:pointer;
+    transition:transform .1s ease, box-shadow .1s ease;
+  }
+  .btn:active{ transform:translateY(1px); }
+  .btn-primary{ background:var(--ball); color:var(--teal-900); }
+  .btn-primary:hover{ box-shadow:0 6px 16px -6px rgba(255,199,44,.65); }
+  .btn-ghost{ background:transparent; color:var(--teal-900); border-color:var(--line); }
+  .btn-ghost:hover{ border-color:var(--teal-900); }
+  .btn:disabled{ opacity:.45; cursor:not-allowed; }
+  .error-msg{ color:var(--coral); font-size:var(--fs-sm); font-weight:600; margin:-10px 0 16px; display:none; }
+  .error-msg.visible{ display:block; }
+
+  /* ---------- Step 3: schedule ---------- */
+  .schedule-layout{ display:flex; flex-direction:column; gap:28px; }
+  @media (min-width:960px){
+    .schedule-layout{ flex-direction:row; align-items:flex-start; }
+    .rounds-col{ flex:1 1 66%; min-width:0; }
+    .board-col{ flex:1 1 34%; position:sticky; top:20px; }
+  }
+
+  .round-block{ margin-bottom:22px; }
+  .round-head{
+    display:flex; align-items:center; gap:12px;
+    margin-bottom:12px;
+  }
+  .round-num{
+    font-family:var(--font-mono);
+    font-size:var(--fs-lg);
+    background:var(--teal-900);
+    color:var(--ball);
+    padding:6px 12px;
+    border-radius:6px;
+    letter-spacing:.05em;
+  }
+  .round-line{ flex:1; height:1px; background:var(--line); }
+
+  .pool-label{
+    font-family:var(--font-mono);
+    font-size:var(--fs-md);
+    text-transform:uppercase;
+    letter-spacing:.08em;
+    font-weight:700;
+    margin:18px 0 10px;
+    padding:2px 0 6px 10px;
+    /* Bar on the left plus an underline in the level's own colour, so each
+       level reads as its own clearly separated block of the schedule. */
+    border-left:4px solid currentColor;
+    border-bottom:2px solid currentColor;
+    line-height:1.25;
+  }
+  .pool-label.lv-silver{ color:var(--lv-silver); }
+  .pool-label.lv-gold{ color:var(--lv-gold); }
+  .pool-label.lv-platinum{ color:var(--lv-platinum); }
+
+  .courts-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit, minmax(260px, 1fr));
+    gap:14px;
+  }
+  .match-card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+  }
+  .match-card .court-label{
+    font-family:var(--font-mono);
+    font-size:var(--fs-md);
+    letter-spacing:.04em;
+    color:#fff;
+    background:var(--teal-700);
+    padding:7px 12px;
+    text-transform:uppercase;
+  }
+  .match-body{ padding:14px 16px 12px; }
+  .teams-row{
+    display:flex; align-items:center; gap:10px;
+  }
+  .team{ flex:1; min-width:0; }
+  .team.team-right{ text-align:right; }
+  .team .players{ font-weight:700; font-size:var(--fs-base); line-height:1.3; }
+  .team .players + .players{ margin-top:2px; }
+  .vs{ font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--ink-soft); }
+  .score-row{
+    display:flex; align-items:center; gap:10px;
+    margin-top:10px;
+  }
+  .score-spacer{ flex:1; min-width:0; }
+  .score-inputs{ display:flex; align-items:center; gap:10px; flex:0 0 auto; }
+  .score-row input{
+    width:56px;
+    text-align:center;
+    font-family:var(--font-mono);
+    font-size:var(--fs-lg);
+    font-weight:600;
+    padding:6px 4px;
+    border:1.5px solid var(--teal-700);
+    border-radius:6px;
+    color:var(--teal-900);
+    background:var(--mist);
+  }
+  .score-row input:focus{ background:#fff; }
+  .score-dash{ font-family:var(--font-mono); color:var(--ink-soft); }
+
+  .resting-line{
+    margin:10px 0 0;
+    font-size:var(--fs-xs);
+    color:var(--ink-soft);
+  }
+  .resting-line b{ color:var(--coral); font-weight:700; }
+  .sitout-note{
+    margin:6px 0 2px;
+    padding:10px 14px;
+    border-radius:10px;
+    border:1.5px dashed var(--teal-600);
+    background:var(--surface);
+    font-size:var(--fs-sm);
+    color:var(--ink-soft);
+  }
+  .sitout-note b{ color:var(--teal-900); }
+
+  /* ---------- Halftime checkpoint ---------- */
+  .checkpoint-card{
+    background:var(--teal-900);
+    color:#fff;
+    border-radius:14px;
+    padding:26px 24px;
+    text-align:center;
+    margin:8px 0 28px;
+    border:2px dashed rgba(255,199,44,.45);
+  }
+  .checkpoint-card .cp-eyebrow{
+    font-family:var(--font-mono);
+    font-size:var(--fs-2xs);
+    letter-spacing:.12em;
+    color:var(--ball);
+    text-transform:uppercase;
+    margin-bottom:6px;
+  }
+  .checkpoint-card h4{
+    font-family:var(--font-display);
+    font-weight:800;
+    text-transform:uppercase;
+    font-size:var(--fs-lg);
+    margin:0 0 10px;
+  }
+  .checkpoint-card p{ margin:0 auto 18px; max-width:440px; font-size:var(--fs-base); color:#C5D6EC; }
+  .checkpoint-card .error-msg{ color:#FFB3AB; margin:14px 0 0; }
+
+  /* ---------- Leaderboard ---------- */
+  .board{
+    background:var(--teal-900);
+    border-radius:14px;
+    padding:20px;
+    color:#fff;
+  }
+  .board + .board{ margin-top:16px; }
+  .board-head{ display:flex; align-items:baseline; justify-content:space-between; gap:10px; }
+  .board h3{
+    font-family:var(--font-display);
+    font-weight:800;
+    text-transform:uppercase;
+    font-size:var(--fs-lg);
+    letter-spacing:.05em;
+    margin:0 0 4px;
+    color:var(--ball);
+  }
+  .board-toggle-btn{
+    font-family:var(--font-mono);
+    font-size:var(--fs-sm);
+    background:none;
+    border:1px solid #37629C;
+    color:#AFC6E4;
+    border-radius:14px;
+    padding:4px 10px;
+    cursor:pointer;
+    white-space:nowrap;
+  }
+  .board-toggle-btn:hover{ border-color:var(--ball); color:var(--ball); }
+  .board .board-sub{ font-family:var(--font-mono); font-size:var(--fs-xs); color:#AFC6E4; margin-bottom:14px; }
+  .board-note{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:#9DB4D2; margin-top:10px; line-height:1.4; }
+  .recalc-star{ font-weight:700; cursor:help; }
+  .recalc-star.recalc-down{ color:var(--ball); }
+  .recalc-star.recalc-up{ color:#7FD3F7; font-size:.8em; }
+  table.board-table{ width:100%; border-collapse:collapse; font-size:var(--fs-sm); }
+  table.board-table th{
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:var(--fs-2xs);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:#9DB4D2;
+    padding:0 6px 8px;
+    border-bottom:1px solid #2C5A96;
+  }
+  table.board-table td{
+    padding:8px 6px;
+    border-bottom:1px solid #2C5A96;
+    font-family:var(--font-body);
+  }
+  table.board-table td.rank{ font-family:var(--font-mono); font-weight:700; color:var(--ball); width:24px; }
+  table.board-table td.pts{ font-family:var(--font-mono); font-weight:700; text-align:right; color:#fff; }
+  table.board-table td.avg{ font-family:var(--font-mono); font-weight:700; text-align:right; color:var(--ball); }
+  table.board-table td.diff{ font-family:var(--font-mono); font-size:var(--fs-sm); text-align:right; color:#9DB4D2; }
+  table.board-table td.grp-tag{ font-family:var(--font-mono); font-size:var(--fs-2xs); text-align:right; }
+  table.board-table td.grp-tag.top{ color:var(--ball); }
+  table.board-table td.grp-tag.bottom{ color:var(--lv-silver-on-dark); }
+  table.board-table td.grp-tag.out{ color:#8FA3C0; }
+  table.board-table th.marker-col{ padding-left:0; padding-right:8px; width:14px; }
+  table.board-table td.marker-col{ padding-left:0; padding-right:8px; text-align:left; width:14px; }
+  table.board-table .out-tag{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:#8FA3C0; margin-left:6px; }
+  table.board-table tr:first-child td{ padding-top:12px; }
+  table.board-table tr:last-child td{ border-bottom:none; }
+
+  .top3{ background:rgba(255,199,44,.10); }
+  .cutoff-row td{ border-top:2px dashed var(--ball); }
+
+  /* ---------- Play count panel ---------- */
+  .playcount-wrap{ margin:24px 0 30px; }
+  .playcount-panel{
+    margin-top:14px;
+    background:var(--surface);
+    border:1.5px solid var(--line);
+    border-radius:12px;
+    padding:18px 20px;
+    max-width:460px;
+  }
+  .playcount-section + .playcount-section{ margin-top:20px; padding-top:18px; border-top:1px dashed var(--line); }
+  .playcount-section-title{ font-family:var(--font-display); font-weight:800; font-size:var(--fs-md); text-transform:uppercase; letter-spacing:.02em; color:var(--teal-900); margin-bottom:6px; }
+  .playcount-summary{ font-family:var(--font-mono); font-size:var(--fs-xs); color:var(--ink-soft); margin-bottom:12px; }
+  table.playcount-table{ width:100%; border-collapse:collapse; font-size:var(--fs-sm); }
+  table.playcount-table th{
+    text-align:left;
+    font-family:var(--font-mono);
+    font-size:var(--fs-2xs);
+    letter-spacing:.06em;
+    text-transform:uppercase;
+    color:var(--ink-soft);
+    padding:0 6px 8px;
+    border-bottom:1px solid var(--line);
+  }
+  table.playcount-table th.sortable-th{ cursor:pointer; user-select:none; }
+  table.playcount-table th.sortable-th:hover{ color:var(--teal-700); }
+  table.playcount-table td{
+    padding:7px 6px;
+    border-bottom:1px solid var(--line);
+    font-family:var(--font-body);
+  }
+  table.playcount-table td:last-child{ font-family:var(--font-mono); font-weight:700; text-align:right; color:var(--teal-900); }
+  table.playcount-table td.grp-tag{ font-family:var(--font-mono); font-size:var(--fs-2xs); text-align:right; color:var(--ink-soft); }
+  table.playcount-table tr:last-child td{ border-bottom:none; }
+  table.playcount-table tr.is-out{ opacity:.55; }
+  table.playcount-table tr.is-out td:last-child{ color:var(--ink-soft); }
+  table.playcount-table .out-tag-pc{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--coral); margin-left:6px; }
+  table.playcount-table .added-tag{ font-family:var(--font-mono); font-size:var(--fs-2xs); color:var(--ball-dark); margin-left:6px; }
+
+  .schedule-actions{
+    display:flex; gap:10px; margin:22px 0 30px; flex-wrap:wrap;
+  }
+
+  /* ---------- Edit roster panel ---------- */
+  .edit-status{
+    background:var(--surface);
+    border:1.5px solid var(--teal-700);
+    border-radius:12px;
+    padding:14px 18px;
+    margin-bottom:22px;
+    font-size:var(--fs-sm);
+    color:var(--ink-soft);
+  }
+  .edit-status .es-line{ margin:4px 0; }
+  .edit-status .es-line b{ color:var(--teal-900); }
+  .es-pool{ padding:10px 0; }
+  .es-pool + .es-pool{ border-top:1px dashed var(--line); }
+  .es-pool-label{ font-family:var(--font-mono); font-size:var(--fs-xs); font-weight:600; text-transform:uppercase; letter-spacing:.04em; color:var(--teal-900); margin-bottom:8px; }
+  .es-rounds-control{ display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; }
+  .es-rounds-control label{ font-size:var(--fs-sm); font-weight:600; color:var(--teal-900); }
+  .es-rounds-control .stepper input{ width:44px; }
+  .es-rounds-hint{ font-size:var(--fs-xs); color:var(--ink-soft); }
+  .edit-roster-list{ display:flex; flex-direction:column; gap:10px; margin-bottom:16px; }
+  .edit-row{ display:flex; align-items:center; gap:8px; }
+  .edit-row input{
+    flex:1;
+    padding:11px 12px;
+    border:1.5px solid var(--line);
+    border-radius:8px;
+    font-family:var(--font-body);
+    font-size:var(--fs-base);
+    background:var(--surface);
+    color:var(--ink);
+  }
+  .edit-row input:focus{ border-color:var(--teal-600); }
+  .edit-row input.dup-name-input{ border-color:var(--coral); background:#FDF1F0; }
+  .edit-row.is-new input{ border-color:var(--ball-dark); background:#FFFBEC; }
+  .edit-row .remove-btn{
+    width:38px; height:38px;
+    flex:0 0 auto;
+    border-radius:8px;
+    border:1.5px solid var(--line);
+    background:var(--surface);
+    color:var(--coral);
+    font-size:var(--fs-md);
+    cursor:pointer;
+  }
+  .edit-row .remove-btn:hover{ border-color:var(--coral); }
+
+  /* ---------- Confirm modal ---------- */
+  .modal-overlay{
+    position:fixed; inset:0;
+    background:rgba(18,35,61,.55);
+    display:none;
+    align-items:center; justify-content:center;
+    padding:20px;
+    z-index:50;
+  }
+  .modal-overlay.visible{ display:flex; }
+  .modal-box{
+    background:var(--surface);
+    border-radius:14px;
+    padding:26px 26px 20px;
+    max-width:360px;
+    width:100%;
+    box-shadow:0 20px 50px -12px rgba(28,67,125,.45);
+  }
+  .modal-box p{ margin:0 0 20px; font-size:var(--fs-base); color:var(--ink); }
+  .modal-actions{ display:flex; gap:10px; justify-content:flex-end; }
+
+  @media print{
+    .steps, .schedule-actions, .board, .checkpoint-card, .lang-switch{ display:none !important; }
+    #loadBtn, #saveBtn{ display:none !important; }
+    body{ background:#fff; }
+    .match-card{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="masthead">
+    <div class="brand">
+      <h1 id="appTitle">Toss / Americano</h1>
+      <span class="ball-dot" aria-hidden="true"></span>
+    </div>
+    <div class="meta-strip" id="metaStrip" style="display:none;"></div>
+  </div>
+
+  <div class="steps" id="stepsNav">
+    <div class="step" data-step="1"><span class="num">1</span> <span data-i18n="stepSetup">Instellen</span></div>
+    <div class="step" data-step="2"><span class="num">2</span> <span data-i18n="stepNames">Namen</span></div>
+    <div class="step" data-step="3"><span class="num">3</span> <span data-i18n="stepSchedule">Schema</span></div>
+  </div>
+
+  <!-- STEP 1 -->
+  <section class="panel" id="panel1">
+    <div class="lang-switch" id="langSwitch">
+      <button type="button" class="lang-btn active" data-lang="nl">NL</button>
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+    </div>
+
+    <h2 class="panel-title" data-i18n="p1Title">Speelvorm instellen</h2>
+    <p class="panel-sub" data-i18n="p1Sub">Kies eerst een speelvorm. Geef daarna aan hoeveel banen je hebt en hoeveel spelers er komen.</p>
+
+    <p class="sub-heading" data-i18n="formatHeading">Wat voor speelvorm?</p>
+    <div class="format-select" id="formatSelect">
+      <button class="format-btn" type="button" data-format="toss">
+        <div class="fb-name" data-i18n="formatToss">Toss</div>
+        <div class="fb-desc" data-i18n="formatTossDesc">Alleen een schema, geen uitslagen invullen</div>
+      </button>
+      <button class="format-btn" type="button" data-format="splitToss">
+        <div class="fb-name" data-i18n="formatSplitToss">Gesplitste Toss</div>
+        <div class="fb-desc" data-i18n="formatSplitTossDesc">Beginners + gevorderden apart ingedeeld — optioneel met uitslagen en klassement per niveau</div>
+      </button>
+      <button class="format-btn" type="button" data-format="americano">
+        <div class="fb-name" data-i18n="formatAmericano">Americano / Competitieve toss</div>
+        <div class="fb-desc" data-i18n="formatAmericanoDesc">Met score, klassement en optioneel een winnaars/verliezers-schema</div>
+      </button>
+    </div>
+
+    <p class="sub-heading" data-i18n="p1CourtsHeading">Hoeveel banen heb je?</p>
+    <div class="courts-select" id="courtsSelect">
+      <button class="court-btn" type="button" data-courts="1"><div class="cb-num">1</div><div class="cb-label" data-i18n="courtUnitSingular">baan</div></button>
+      <button class="court-btn" type="button" data-courts="2"><div class="cb-num">2</div><div class="cb-label" data-i18n="courtUnitPlural">banen</div></button>
+      <button class="court-btn" type="button" data-courts="3"><div class="cb-num">3</div><div class="cb-label" data-i18n="courtUnitPlural">banen</div></button>
+      <button class="court-btn" type="button" data-courts="4"><div class="cb-num">4</div><div class="cb-label" data-i18n="courtUnitPlural">banen</div></button>
+      <div class="courts-more">
+        <label for="courtsMoreSelect" data-i18n="courtsMoreLabel">Meer banen (5–12)</label>
+        <select id="courtsMoreSelect" aria-label="More courts">
+          <option value="" disabled hidden data-i18n="courtsMorePlaceholder">Kies aantal…</option>
+          <option value="5">5</option>
+          <option value="6">6</option>
+          <option value="7">7</option>
+          <option value="8">8</option>
+          <option value="9">9</option>
+          <option value="10">10</option>
+          <option value="11">11</option>
+          <option value="12">12</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Single player count (Toss / Americano) -->
+    <div id="singlePlayersBlock">
+      <p class="sub-heading" data-i18n="p1PlayersHeading">Hoeveel spelers?</p>
+      <div class="count-input-row">
+        <button type="button" class="stepper-btn" id="countMinus" aria-label="Fewer players">−</button>
+        <input type="number" id="playerCountInput" min="4" max="96" value="16" inputmode="numeric" aria-label="Number of players">
+        <button type="button" class="stepper-btn" id="countPlus" aria-label="More players">+</button>
+        <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
+      </div>
+      <div class="chip-row" id="chipRow">
+        <button class="chip" type="button" data-count="8">8</button>
+        <button class="chip" type="button" data-count="12">12</button>
+        <button class="chip" type="button" data-count="16">16</button>
+        <button class="chip" type="button" data-count="20">20</button>
+        <button class="chip" type="button" data-count="24">24</button>
+        <button class="chip" type="button" data-count="32">32</button>
+        <button class="chip" type="button" data-count="40">40</button>
+        <button class="chip" type="button" data-count="48">48</button>
+      </div>
+    </div>
+
+    <!-- Player count per level (Split Toss: three levels) -->
+    <div id="splitPlayersBlock" style="display:none;">
+      <div class="level-columns">
+        <div class="level-col">
+          <p class="sub-heading" data-i18n="beginnerPlayersHeading">Aantal in Zilver</p>
+          <div class="count-input-row">
+            <button type="button" class="stepper-btn" id="beginnerCountMinus" aria-label="Fewer players">−</button>
+            <input type="number" id="beginnerCountInput" min="0" max="96" value="8" inputmode="numeric" aria-label="Beginner player count">
+            <button type="button" class="stepper-btn" id="beginnerCountPlus" aria-label="More players">+</button>
+            <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
+          </div>
+        </div>
+        <div class="level-col">
+          <p class="sub-heading" data-i18n="ervarenPlayersHeading">Aantal in Goud</p>
+          <div class="count-input-row">
+            <button type="button" class="stepper-btn" id="ervarenCountMinus" aria-label="Fewer players">−</button>
+            <input type="number" id="ervarenCountInput" min="0" max="96" value="8" inputmode="numeric" aria-label="Ervaren player count">
+            <button type="button" class="stepper-btn" id="ervarenCountPlus" aria-label="More players">+</button>
+            <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
+          </div>
+        </div>
+        <div class="level-col">
+          <p class="sub-heading" data-i18n="gevorderdPlayersHeading">Aantal in Platina</p>
+          <div class="count-input-row">
+            <button type="button" class="stepper-btn" id="gevorderdCountMinus" aria-label="Fewer players">−</button>
+            <input type="number" id="gevorderdCountInput" min="0" max="96" value="0" inputmode="numeric" aria-label="Gevorderd player count">
+            <button type="button" class="stepper-btn" id="gevorderdCountPlus" aria-label="More players">+</button>
+            <span class="count-input-label" data-i18n="p1PlayersUnit">spelers</span>
+          </div>
+        </div>
+      </div>
+      <p class="level-hint" data-i18n="levelZeroHint">Niveaus worden van links naar rechts gevuld: Zilver eerst, dan Goud, dan Platina. Wil je met één groep spelen, kies dan Toss of Americano.</p>
+    </div>
+
+    <div class="courts-preview" id="courtsPreview"></div>
+    <p class="error-msg" id="countError" data-i18n="countError">Vul een aantal spelers in tussen 4 en 96.</p>
+    <p class="error-msg" id="loadError"></p>
+
+    <div class="actions-row" style="margin-top:22px;">
+      <button class="btn btn-ghost" id="cancelToScheduleBtn1" type="button" data-i18n="cancelToScheduleBtn" style="display:none;">← Terug naar schema</button>
+      <button class="btn btn-primary" id="continueTo2" type="button" data-i18n="continueBtn">Doorgaan →</button>
+      <button class="btn btn-ghost" id="loadBtn" type="button" data-i18n="loadBtn">📂 Opgeslagen schema laden</button>
+      <input type="file" id="loadFileInput" accept=".json,application/json" style="display:none;">
+    </div>
+  </section>
+
+  <!-- STEP 2 -->
+  <section class="panel" id="panel2">
+    <h2 class="panel-title" data-i18n="p2Title">Namen invoeren</h2>
+    <p class="panel-sub" id="panel2Sub"></p>
+
+    <div class="settings-row">
+      <div class="field-group">
+        <label for="roundsInput" data-i18n="totalRoundsLabel">Totaal aantal rondes</label>
+        <div class="stepper">
+          <button type="button" id="roundsMinus" aria-label="Fewer rounds">−</button>
+          <input type="number" id="roundsInput" value="7" min="4" max="16" inputmode="numeric">
+          <button type="button" id="roundsPlus" aria-label="More rounds">+</button>
+        </div>
+      </div>
+      <div class="field-group collapsed" id="regroupField">
+        <label for="regroupToggle" data-i18n="regroupLabel">Herindeling op de helft</label>
+        <div class="toggle-row">
+          <input type="checkbox" id="regroupToggle">
+          <label for="regroupToggle" data-i18n="regroupToggleLabel">Splits halverwege in Goud en Zilver</label>
+        </div>
+        <span class="hint" id="regroupHint"></span>
+      </div>
+      <div class="field-group collapsed" id="splitRoundField">
+        <label for="splitRoundInput" data-i18n="splitAfterLabel">Splits na ronde</label>
+        <div class="stepper">
+          <button type="button" id="splitRoundMinus">−</button>
+          <input type="number" id="splitRoundInput" value="4" min="1" max="15" inputmode="numeric">
+          <button type="button" id="splitRoundPlus">+</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Single names grid (Toss / Americano) -->
+    <div id="namesSingleBlock">
+      <div class="names-grid" id="namesGrid"></div>
+      <p class="panel-sub" style="margin:-10px 0 20px; font-size:12.5px;" data-i18n="blankNameHint">Laat een veld leeg — dan speelt "Speler N" mee.</p>
+    </div>
+
+    <!-- Names grid per level (Split Toss: three levels) -->
+    <div id="namesSplitBlock" style="display:none;">
+      <div class="dual-group" id="namesGroupBeginner">
+        <p class="dual-group-head lv-silver" data-i18n="beginnerLabel">Zilver</p>
+        <div class="names-grid" id="namesGridBeginner"></div>
+        <div class="toggle-row" style="margin:4px 0 20px;">
+          <input type="checkbox" id="beginnerResultsToggle">
+          <label for="beginnerResultsToggle" data-i18n="resultsToggleText">Resultaten bijhouden (zoals Americano)</label>
+        </div>
+      </div>
+      <div class="dual-group" id="namesGroupErvaren">
+        <p class="dual-group-head lv-gold" data-i18n="ervarenLabel">Goud</p>
+        <div class="names-grid" id="namesGridErvaren"></div>
+        <div class="toggle-row" style="margin:4px 0 20px;">
+          <input type="checkbox" id="ervarenResultsToggle">
+          <label for="ervarenResultsToggle" data-i18n="resultsToggleText">Resultaten bijhouden (zoals Americano)</label>
+        </div>
+      </div>
+      <div class="dual-group" id="namesGroupGevorderd">
+        <p class="dual-group-head lv-platinum" data-i18n="gevorderdLabel">Platina</p>
+        <div class="names-grid" id="namesGridGevorderd"></div>
+        <div class="toggle-row" style="margin:4px 0 20px;">
+          <input type="checkbox" id="gevorderdResultsToggle">
+          <label for="gevorderdResultsToggle" data-i18n="resultsToggleText">Resultaten bijhouden (zoals Americano)</label>
+        </div>
+      </div>
+      <p class="panel-sub" style="margin:-10px 0 20px; font-size:12.5px;" data-i18n="blankNameHint">Laat een veld leeg — dan speelt "Speler N" mee.</p>
+    </div>
+
+    <p class="error-msg" id="step2DupError" data-i18n="dupNameError">Dubbele namen zijn niet toegestaan — gemarkeerd hieronder.</p>
+
+    <div class="actions-row">
+      <button class="btn btn-ghost" id="backTo1" data-i18n="backBtn">← Terug</button>
+      <button class="btn btn-ghost" id="cancelToScheduleBtn2" type="button" data-i18n="cancelToScheduleBtn" style="display:none;">← Terug naar schema</button>
+      <button class="btn btn-primary" id="generateBtn" data-i18n="generateBtn">Genereer schema →</button>
+    </div>
+  </section>
+
+  <!-- STEP 3 -->
+  <section class="panel" id="panel3">
+    <div class="schedule-actions">
+      <button class="btn btn-ghost" id="backToSettingsBtn" data-i18n="backToSettingsBtn">← Instellingen wijzigen</button>
+      <button class="btn btn-ghost" id="editPlayersBtn" data-i18n="editPlayersBtn">✎ Spelers wijzigen</button>
+      <button class="btn btn-ghost" id="startOverBtn" data-i18n="startOverBtn">↺ Opnieuw beginnen</button>
+      <button class="btn btn-ghost" id="printBtn" data-i18n="printBtn">Schema afdrukken</button>
+      <button class="btn btn-ghost" id="saveBtn" data-i18n="saveBtn">💾 Speelschema opslaan</button>
+    </div>
+
+    <div class="schedule-layout">
+      <div class="rounds-col" id="roundsCol"></div>
+      <div class="board-col" id="boardCol"></div>
+    </div>
+
+    <div class="playcount-wrap">
+      <button type="button" class="btn btn-ghost" id="playcountToggleBtn" data-i18n="playcountToggleShow">📊 Toon speeltelling</button>
+      <div class="playcount-panel" id="playcountPanel" style="display:none;">
+        <div id="playcountTables"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- EDIT ROSTER PANEL -->
+  <section class="panel" id="panelEdit">
+    <h2 class="panel-title" data-i18n="editTitle">Spelers wijzigen</h2>
+    <p class="panel-sub" data-i18n="editSub">Namen aanpassen, spelers toevoegen of verwijderen.</p>
+
+    <div class="edit-status" id="editStatus"></div>
+
+    <!-- Single roster (Toss / Americano) -->
+    <div id="editSingleBlock">
+      <div class="edit-roster-list" id="editRosterList"></div>
+      <p class="error-msg" id="editAddDisabledNote" data-i18n="editAddDisabledNote" style="display:none;"></p>
+      <div class="actions-row" style="margin-bottom:22px;">
+        <button class="btn btn-ghost" id="editAddBtn" type="button" data-i18n="editAddBtn">+ Speler toevoegen</button>
+      </div>
+    </div>
+
+    <!-- Roster per level (Split Toss: three levels) -->
+    <div id="editSplitBlockWrap" style="display:none;">
+      <div class="dual-group" id="editGroupBeginner">
+        <p class="dual-group-head lv-silver" data-i18n="beginnerLabel">Zilver</p>
+        <div class="edit-roster-list" id="editRosterListBeginner"></div>
+        <div class="actions-row" style="margin-bottom:22px;">
+          <button class="btn btn-ghost" id="editAddBeginnerBtn" type="button" data-i18n="editAddBtn">+ Speler toevoegen</button>
+        </div>
+      </div>
+      <div class="dual-group" id="editGroupErvaren">
+        <p class="dual-group-head lv-gold" data-i18n="ervarenLabel">Goud</p>
+        <div class="edit-roster-list" id="editRosterListErvaren"></div>
+        <div class="actions-row" style="margin-bottom:22px;">
+          <button class="btn btn-ghost" id="editAddErvarenBtn" type="button" data-i18n="editAddBtn">+ Speler toevoegen</button>
+        </div>
+      </div>
+      <div class="dual-group" id="editGroupGevorderd">
+        <p class="dual-group-head lv-platinum" data-i18n="gevorderdLabel">Platina</p>
+        <div class="edit-roster-list" id="editRosterListGevorderd"></div>
+        <div class="actions-row" style="margin-bottom:22px;">
+          <button class="btn btn-ghost" id="editAddGevorderdBtn" type="button" data-i18n="editAddBtn">+ Speler toevoegen</button>
+        </div>
+      </div>
+    </div>
+
+    <p class="error-msg" id="editError"></p>
+    <div class="actions-row">
+      <button class="btn btn-ghost" id="editCancelBtn" type="button" data-i18n="editCancelBtn">Annuleren</button>
+      <button class="btn btn-primary" id="editApplyBtn" type="button" data-i18n="editApplyBtn">Wijzigingen doorvoeren →</button>
+    </div>
+  </section>
+
+</div>
+
+<div class="modal-overlay" id="confirmOverlay">
+  <div class="modal-box">
+    <p id="confirmModalText" data-i18n="modalStartOverText">Opnieuw beginnen? Dit wist alle namen en scores.</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="confirmCancelBtn" type="button" data-i18n="cancelBtn">Annuleren</button>
+      <button class="btn btn-primary" id="confirmYesBtn" type="button" data-i18n="confirmStartOverBtn">Ja, opnieuw beginnen</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // Safety net: make sure panel 1 is visible even if something below throws,
+  // so a script error never leaves the whole page blank.
+  try { document.getElementById('panel1').classList.add('visible'); } catch(e0){}
+
+  try {
+
+  // ================= i18n =================
+  var STR = {
+    nl: {
+      stepSetup: 'Instellen', stepNames: 'Namen', stepSchedule: 'Schema',
+      p1Title: 'Speelvorm instellen',
+      p1Sub: 'Kies eerst een speelvorm. Geef daarna aan hoeveel banen je hebt en hoeveel spelers er komen. Er spelen maar 4 tegelijk per baan — wie niet speelt, wacht tot de volgende ronde.',
+      p1PlayersHeading: 'Hoeveel spelers?',
+      p1PlayersUnit: 'spelers',
+      p1CourtsHeading: 'Hoeveel banen heb je?',
+      courtUnitSingular: 'baan',
+      courtsMoreLabel: 'Meer banen (5\u201312)',
+      courtsMorePlaceholder: 'Kies aantal\u2026',
+      courtUnitPlural: 'banen',
+      countError: 'Vul een aantal spelers in tussen 4 en 96.',
+      continueBtn: 'Doorgaan →',
+      sitOutTitle: 'Deze ronde is anders:',
+      sitOutBody: 'dit niveau slaat deze ronde over, zodat het andere niveau alle banen kan gebruiken. Zo speelt iedereen over alle rondes ongeveer evenveel potjes.',
+      courtsSitOutNote: 'Meestal spelen alle niveaus tegelijk. In een enkele ronde slaat één niveau over zodat een ander alle banen kan gebruiken — zo speelt iedereen ongeveer evenveel potjes. Die rondes staan in het schema vermeld.',
+      courtsRotateNote: 'De banen wisselen per ronde tussen de niveaus, zodat elk niveau ongeveer evenveel potjes speelt.',
+      courtsUnevenWarn: 'Let op: met deze verdeling speelt niet iedereen evenveel \u2014 ongeveer {a} tegen {b} potjes per speler over {n} rondes. {group} komt er bekaaid vanaf. Een baan erbij of een speler verschuiven tussen de niveaus lost dit op.',
+      courtsInUse: 'in gebruik',
+      courtsUnderused: 'Slechts <b>{active} van je {total} banen</b> kunnen elke ronde gevuld worden met {n} spelers (4 nodig per baan). ',
+      courtsNote: '{slots} spelers actief per ronde{resting} — indeling en banen worden elke ronde willekeurig opnieuw bepaald.',
+      restingSuffix: ', {n} wachten',
+      p2Title: 'Namen invoeren',
+      p2SubTemplate: '{n} spelers, {courts} \u2192 {active} gevuld per ronde{resting}. Volledig willekeurig elke ronde \u2014 4 op de baan tegelijk.',
+      totalRoundsLabel: 'Totaal aantal rondes',
+      regroupLabel: 'Herindeling op de helft',
+      regroupToggleLabel: 'Splits halverwege in Goud en Zilver',
+      regroupHintEnabled: 'Pauzeer na een ingestelde ronde, rangschik iedereen op punten, en speel daarna in twee aparte groepen verder \u2014 de bovenste helft als Goud, de onderste als Zilver, met jullie banen verdeeld ertussen.',
+      regroupHintDisabled: 'Vereist minimaal 8 spelers en 2 banen, zodat beide helften tegelijk kunnen spelen.',
+      regroupHintNeedsResults: 'Beschikbaar zodra je resultaten bijhoudt.',
+      splitAfterLabel: 'Splits na ronde',
+      namePlaceholder: 'Speler {n}',
+      namePlaceholderBeginner: 'Zilver {n}',
+      namePlaceholderGevorderd: 'Platina {n}',
+      namePlaceholderErvaren: 'Goud {n}',
+      blankNameHint: 'Laat een veld leeg — dan speelt "Speler N" mee. Namen vul je aan wanneer je wilt.',
+      backBtn: '← Terug',
+      cancelToScheduleBtn: '← Terug naar schema',
+      generateBtn: 'Genereer schema →',
+      editPlayersBtn: '✎ Spelers wijzigen',
+      startOverBtn: '↺ Opnieuw beginnen',
+      saveBtn: '💾 Speelschema opslaan',
+      loadBtn: '📂 Opgeslagen schema laden',
+      loadErrNotJson: 'Dit bestand kon niet gelezen worden. Kies het .json-bestand dat je eerder met \'Speelschema opslaan\' hebt gemaakt.',
+      loadErrWrongFile: 'Dit lijkt geen opgeslagen speelschema van deze app te zijn.',
+      loadErrVersion: 'Dit bestand komt uit een nieuwere versie van de app en kan hier niet geopend worden.',
+      loadErrCorrupt: 'Dit opgeslagen speelschema is onvolledig of beschadigd en kan niet geladen worden.',
+      loadErrRead: 'Het bestand kon niet gelezen worden. Probeer het opnieuw.',
+      printBtn: 'Schema afdrukken',
+      roundLabel: 'RONDE',
+      courtLabel: 'Baan',
+      vsLabel: 'vs',
+      restingPrefix: 'Wachten: ',
+      poolLabelTop: 'Goud',
+      poolLabelBottom: 'Zilver',
+      restingPoolSuffix: ' wachten: ',
+      cpEyebrow: 'TUSSENSTAND',
+      cpHeading: 'Bekijk het klassement en splits in Goud en Zilver',
+      cpBody: 'Vul alle scores hierboven in. Zodra je zover bent: rangschik iedereen en ga verder in twee aparte groepen \u2014 Goud tegen Goud, Zilver tegen Zilver, met jullie banen verdeeld ertussen.',
+      cpButton: 'Splits in Goud & Zilver \u2192',
+      cpError: 'Vul eerst alle scores in voor ronde 1–{n}.',
+      boardTitle: 'Klassement',
+      boardSub: 'Bij gelijke stand beslist saldo, dan onderling resultaat',
+      thRank: '#', thPlayer: 'Speler', thGroup: 'Grp', thDiff: '±', thPts: 'Pt', thAvg: 'Gem',
+      recalcNote: 'Punten worden teruggerekend naar {ref} potjes voor een eerlijke vergelijking. * = teruggerekend omdat iemand meer potjes speelde. ▲ = juist opgehoogd, voor wie er vanaf het begin bij was maar door de loting minder potjes kreeg. Spelers die gestopt zijn (UIT) of later zijn toegevoegd houden hun punten precies zoals behaald.',
+      recalcTooltipDown: 'Teruggerekend van {raw} punten in {played} potjes',
+      recalcTooltipUp: 'Opgehoogd van {raw} punten in {played} potjes — minder potjes door de loting, niet je eigen keuze',
+      boardHideBtn: 'Verberg klassement',
+      boardShowBtn: 'Toon klassement',
+      grpTop: 'GOU', grpBottom: 'ZIL', grpOut: 'UIT',
+      modalStartOverText: 'Opnieuw beginnen? Dit wist alle namen en scores.',
+      cancelBtn: 'Annuleren',
+      confirmStartOverBtn: 'Ja, opnieuw beginnen',
+      editTitle: 'Spelers wijzigen',
+      editSub: 'Namen aanpassen, spelers toevoegen of verwijderen. Rondes die al volledig zijn ingevuld blijven ongewijzigd — de rest wordt zo eerlijk mogelijk opnieuw ingedeeld, rekening houdend met wat er al gespeeld is.',
+      editFrozen: 'Ronde {range} blijft staan (al gespeeld)',
+      editRegen: 'ronde {range} wordt opnieuw ingedeeld',
+      editAllPlayed: 'Alle rondes zijn al ingedeeld — er is niets meer om opnieuw te schudden.',
+      editPoolMain: 'hoofdgroep',
+      editPoolTop: 'Goud',
+      editPoolBottom: 'Zilver',
+      editRemoveAria: 'Verwijder speler',
+      editAddBtn: '+ Speler toevoegen',
+      editAddDisabledNote: 'Nieuwe spelers toevoegen kan niet meer na de tussenstand-split.',
+      editCancelBtn: 'Annuleren',
+      editApplyBtn: 'Wijzigingen doorvoeren →',
+      editErrMin: 'Houd minimaal 4 spelers over.',
+      editErrMinPool: 'De {pool} heeft te weinig spelers over (minimaal 4).',
+      editErrDuplicate: 'Namen moeten uniek zijn — controleer op dubbele namen.',
+      editNewPlaceholder: 'Nieuwe speler',
+      editWarningNoRounds: 'Let op: er zijn geen rondes meer over om {names} in te plannen.',
+      editRoundsPlayedLabel: 'Rondes al gespeeld',
+      editRoundsPlayedOf: 'van de {n} rondes',
+      formatHeading: 'Wat voor speelvorm?',
+      formatToss: 'Toss',
+      formatTossDesc: 'Alleen een schema, geen uitslagen invullen',
+      formatSplitToss: 'Gesplitste toss',
+      formatSplitTossDesc: 'Twee of drie niveaus apart ingedeeld — optioneel met uitslagen en klassement per niveau',
+      formatAmericano: 'Americano / Competitieve toss',
+      formatAmericanoDesc: 'Met score, klassement en optioneel een winnaars/verliezers-schema',
+      beginnerLabel: 'Zilver',
+      ervarenLabel: 'Goud',
+      gevorderdLabel: 'Platina',
+      levelCapacityNote: 'Van je {total} banen zijn er {usable} bruikbaar: een baan moet gevuld worden met 4 spelers van hetzelfde niveau, en geen enkel niveau heeft er genoeg voor een extra baan. Meer spelers in één niveau maakt de extra baan bruikbaar.',
+      levelPlaysRounds: '{r} van {n} rondes',
+      courtsNoteRotating: '{level}: speelt in {r} van de {n} rondes \u2014 dan {slots} spelers op de baan{resting}.',
+      courtsStructuralNote: 'Je hebt {levels} niveaus en {courts}. Elk niveau speelt op zijn eigen baan, dus ze kunnen niet allemaal tegelijk \u2014 de niveaus wisselen elkaar af en er is elke ronde minstens \u00e9\u00e9n niveau vrij. Vanaf {need} speelt elk niveau elke ronde.',
+      courtsNoteLevel: '{level}: {slots} spelers actief per ronde{resting}.',
+      restingSuffixRange: ', {a}\u2013{b} wachten',
+      restingSuffixUpTo: ', soms tot {n} wachten',
+      courtsReshuffle: 'Indeling en banen worden elke ronde willekeurig opnieuw bepaald.',
+      sitOutTurnTitle: '{level} is deze ronde vrij.',
+      sitOutTurnBody: 'Met {courts} voor {levels} niveaus kan niet elk niveau tegelijk spelen; ze wisselen elkaar af zodat iedereen over alle rondes ongeveer evenveel potjes speelt.',
+      levelZeroHint: 'Niveaus worden van links naar rechts gevuld: Zilver eerst, dan Goud, dan Platina. Zet een niveau op 0 als je het niet gebruikt \u2014 je hebt er minimaal twee nodig. Wil je met \u00e9\u00e9n groep spelen, kies dan Toss (zonder uitslagen) of Americano / Competitieve toss (met klassement).',
+      levelCountError: 'Vul per niveau 0 of 4\u201396 spelers in. Gebruik minstens twee niveaus, en vul ze van links naar rechts: Platina kan alleen als Goud gevuld is.',
+      beginnerPlayersHeading: 'Aantal in Zilver',
+      ervarenPlayersHeading: 'Aantal in Goud',
+      gevorderdPlayersHeading: 'Aantal in Platina',
+      resultsToggleLabel: 'Resultaten',
+      resultsToggleText: 'Resultaten bijhouden (zoals Americano)',
+      resultsToggleHint: 'Zonder dit is het puur een indeling — geen scores, geen klassement.',
+      editPoolBeginner: 'Zilver',
+      editPoolErvaren: 'Goud',
+      editPoolGevorderd: 'Platina',
+      backToSettingsBtn: '← Instellingen wijzigen',
+      modalRegenerateText: 'Een nieuw schema maken vervangt het huidige schema en alle ingevulde scores. Weet je het zeker?',
+      confirmRegenerateBtn: 'Ja, nieuw schema maken',
+      dupNameError: 'Dubbele namen zijn niet toegestaan — gemarkeerd hieronder.',
+      playcountToggleShow: '📊 Toon speeltelling',
+      playcountToggleHide: '📊 Verberg speeltelling',
+      playcountColHeader: 'Potjes',
+      playcountAddedTag: 'NIEUW',
+      playcountSummary: 'Van {min} tot {max} potjes per speler'
+    },
+    en: {
+      stepSetup: 'Setup', stepNames: 'Names', stepSchedule: 'Schedule',
+      p1Title: 'Set up the format',
+      p1Sub: 'Start by picking a format. Then set how many courts you have and how many players are coming. Only 4 play on a court at once — whoever isn\'t playing waits for the next round.',
+      p1PlayersHeading: 'How many players?',
+      p1PlayersUnit: 'players',
+      p1CourtsHeading: 'How many courts do you have?',
+      courtUnitSingular: 'court',
+      courtsMoreLabel: 'More courts (5\u201312)',
+      courtsMorePlaceholder: 'Choose\u2026',
+      courtUnitPlural: 'courts',
+      countError: 'Enter a number of players between 4 and 96.',
+      continueBtn: 'Continue →',
+      sitOutTitle: 'This round is different:',
+      sitOutBody: 'this level sits this round out so the other level can use every court. It keeps the number of games per player even across all the rounds.',
+      courtsSitOutNote: 'Normally every level plays at the same time. In the odd round one level sits out so another can use every court — that keeps games per player even. Those rounds are marked in the schedule.',
+      courtsRotateNote: 'Courts rotate between the levels each round, so every level gets roughly the same number of games.',
+      courtsUnevenWarn: 'Heads up: play time won\'t be equal here \u2014 roughly {a} vs {b} games per player over {n} rounds. {group} gets the short end. Adding a court, or moving a player between levels, fixes it.',
+      courtsInUse: 'in use',
+      courtsUnderused: 'Only <b>{active} of your {total} courts</b> can be filled each round with {n} players (4 needed per court). ',
+      courtsNote: '{slots} players active each round{resting} — matchups and courts are reshuffled randomly every round.',
+      restingSuffix: ', {n} waiting',
+      p2Title: 'Enter the lineup',
+      p2SubTemplate: '{n} players, {courts} \u2192 {active} filled each round{resting}. Fully randomized every round \u2014 4 on court at a time.',
+      totalRoundsLabel: 'Total rounds',
+      regroupLabel: 'Halftime regroup',
+      regroupToggleLabel: 'Split into Gold and Silver partway',
+      regroupHintEnabled: 'Pause after a set round, rank everyone by points, then carry on in two separate groups for the rest \u2014 the upper half as Gold, the lower as Silver, sharing your courts between them.',
+      regroupHintDisabled: 'Needs at least 8 players and 2 courts, so both halves can play at the same time.',
+      regroupHintNeedsResults: 'Available once you\'re tracking results.',
+      splitAfterLabel: 'Split after round',
+      namePlaceholder: 'Player {n}',
+      namePlaceholderBeginner: 'Silver {n}',
+      namePlaceholderGevorderd: 'Platinum {n}',
+      namePlaceholderErvaren: 'Gold {n}',
+      blankNameHint: 'Leave any field blank and it\'ll play as "Player N" — fill in names whenever you\'re ready.',
+      backBtn: '← Back',
+      cancelToScheduleBtn: '← Back to schedule',
+      generateBtn: 'Generate schedule →',
+      editPlayersBtn: '✎ Edit players',
+      startOverBtn: '↺ Start over',
+      saveBtn: '💾 Save schedule',
+      loadBtn: '📂 Load saved schedule',
+      loadErrNotJson: 'This file could not be read. Pick the .json file you created earlier with \'Save schedule\'.',
+      loadErrWrongFile: 'This does not look like a schedule saved by this app.',
+      loadErrVersion: 'This file comes from a newer version of the app and cannot be opened here.',
+      loadErrCorrupt: 'This saved schedule is incomplete or damaged and cannot be loaded.',
+      loadErrRead: 'The file could not be read. Please try again.',
+      printBtn: 'Print schedule',
+      roundLabel: 'ROUND',
+      courtLabel: 'Court',
+      vsLabel: 'vs',
+      restingPrefix: 'Waiting: ',
+      poolLabelTop: 'Gold',
+      poolLabelBottom: 'Silver',
+      restingPoolSuffix: ' waiting: ',
+      cpEyebrow: 'HALFTIME',
+      cpHeading: 'Check the leaderboard, then split into Gold and Silver',
+      cpBody: 'Enter every score above. When you\'re ready, rank everyone and continue in two separate groups \u2014 Gold vs Gold, Silver vs Silver, sharing your courts between them.',
+      cpButton: 'Split into Gold & Silver \u2192',
+      cpError: 'Enter every score for rounds 1–{n} first.',
+      boardTitle: 'Leaderboard',
+      boardSub: 'Ties broken by point diff, then head-to-head',
+      thRank: '#', thPlayer: 'Player', thGroup: 'Grp', thDiff: '±', thPts: 'Pts', thAvg: 'Avg',
+      recalcNote: 'Points are recalculated back to {ref} games for a fair comparison. * = scaled down because they played more games. ▲ = scaled up instead, for someone who was there from the start but drew fewer games by the luck of the rotation. Players who\'ve left (OUT) or joined later keep their points exactly as scored.',
+      recalcTooltipDown: 'Recalculated from {raw} points in {played} games',
+      recalcTooltipUp: 'Scaled up from {raw} points in {played} games — fewer games by the luck of the draw, not their own choice',
+      boardHideBtn: 'Hide leaderboard',
+      boardShowBtn: 'Show leaderboard',
+      grpTop: 'GLD', grpBottom: 'SLV', grpOut: 'OUT',
+      modalStartOverText: 'Start over? This clears all names and scores.',
+      cancelBtn: 'Cancel',
+      confirmStartOverBtn: 'Yes, start over',
+      editTitle: 'Edit players',
+      editSub: 'Rename, add or remove players. Rounds that are already fully scored stay exactly as they are — the rest gets reshuffled as fairly as possible, based on what\'s already been played.',
+      editFrozen: 'Round {range} stays as is (already played)',
+      editRegen: 'round {range} will be reshuffled',
+      editAllPlayed: 'All rounds are already scheduled — nothing left to reshuffle.',
+      editPoolMain: 'group',
+      editPoolTop: 'Gold',
+      editPoolBottom: 'Silver',
+      editRemoveAria: 'Remove player',
+      editAddBtn: '+ Add player',
+      editAddDisabledNote: 'New players can\'t be added after the halftime split.',
+      editCancelBtn: 'Cancel',
+      editApplyBtn: 'Apply changes →',
+      editErrMin: 'Keep at least 4 players.',
+      editErrMinPool: 'The {pool} doesn\'t have enough players left (minimum 4).',
+      editErrDuplicate: 'Names must be unique — check for duplicates.',
+      editNewPlaceholder: 'New player',
+      editWarningNoRounds: 'Note: there are no rounds left to schedule {names} into.',
+      editRoundsPlayedLabel: 'Rounds already played',
+      editRoundsPlayedOf: 'of {n} rounds',
+      formatHeading: 'What kind of format?',
+      formatToss: 'Toss',
+      formatTossDesc: 'Just a schedule, no results to fill in',
+      formatSplitToss: 'Split Toss',
+      formatSplitTossDesc: 'Two or three levels scheduled separately — optionally with results and a leaderboard per level',
+      formatAmericano: 'Americano / Competitive Toss',
+      formatAmericanoDesc: 'With scores, a leaderboard, and an optional winners/losers schedule',
+      beginnerLabel: 'Silver',
+      ervarenLabel: 'Gold',
+      gevorderdLabel: 'Platinum',
+      levelCapacityNote: 'Of your {total} courts, {usable} can be used: a court needs 4 players from the same level, and no level has enough for another court. Adding players to one level frees the extra court up.',
+      levelPlaysRounds: '{r} of {n} rounds',
+      courtsNoteRotating: '{level}: plays in {r} of the {n} rounds \u2014 then {slots} players on court{resting}.',
+      courtsStructuralNote: 'You have {levels} levels and {courts}. Each level plays on its own court, so they cannot all be on at once \u2014 the levels take turns and at least one is free every round. From {need} onwards every level plays every round.',
+      courtsNoteLevel: '{level}: {slots} players active each round{resting}.',
+      restingSuffixRange: ', {a}\u2013{b} waiting',
+      restingSuffixUpTo: ', sometimes up to {n} waiting',
+      courtsReshuffle: 'Matchups and courts are reshuffled randomly every round.',
+      sitOutTurnTitle: '{level} is free this round.',
+      sitOutTurnBody: 'With {courts} for {levels} levels not every level can play at the same time; they take turns so that everyone gets roughly the same number of games across all the rounds.',
+      levelZeroHint: 'Levels fill from left to right: Silver first, then Gold, then Platinum. Set a level to 0 if you are not using it \u2014 you need at least two. For a single group, pick Toss (no results) or Americano / Competitive Toss (with a leaderboard) instead.',
+      levelCountError: 'Enter 0 or 4\u201396 players per level. Use at least two levels and fill them left to right: Platinum needs Gold to be in use.',
+      beginnerPlayersHeading: 'Players in Silver',
+      ervarenPlayersHeading: 'Players in Gold',
+      gevorderdPlayersHeading: 'Players in Platinum',
+      resultsToggleLabel: 'Results',
+      resultsToggleText: 'Track results (like Americano)',
+      resultsToggleHint: 'Without this it\'s just a schedule — no scores, no leaderboard.',
+      editPoolBeginner: 'Silver',
+      editPoolErvaren: 'Gold',
+      editPoolGevorderd: 'Platinum',
+      backToSettingsBtn: '← Change settings',
+      modalRegenerateText: 'Generating a new schedule replaces the current one and any scores you\'ve entered. Are you sure?',
+      confirmRegenerateBtn: 'Yes, generate new schedule',
+      dupNameError: 'Duplicate names aren\'t allowed — marked below.',
+      playcountToggleShow: '📊 Show play count',
+      playcountToggleHide: '📊 Hide play count',
+      playcountColHeader: 'Games',
+      playcountAddedTag: 'NEW',
+      playcountSummary: 'From {min} to {max} games per player'
+    }
+  };
+
+  function t(key){ return (STR[state.lang] && STR[state.lang][key] !== undefined) ? STR[state.lang][key] : key; }
+  function tf(key, vars){
+    var s = t(key);
+    Object.keys(vars || {}).forEach(function(k){ s = s.split('{' + k + '}').join(vars[k]); });
+    return s;
+  }
+
+  function applyStaticTranslations(){
+    document.querySelectorAll('[data-i18n]').forEach(function(el){
+      el.textContent = t(el.getAttribute('data-i18n'));
+    });
+    document.documentElement.lang = state.lang;
+    renderAppTitle();
+  }
+
+  // The heading names the format actually being played, so a printed or shared
+  // schedule says what it is without needing the setup screen for context.
+  function renderAppTitle(){
+    var key = state.format === 'splitToss' ? 'formatSplitToss'
+            : state.format === 'americano' ? 'formatAmericano'
+            : 'formatToss';
+    var el = document.getElementById('appTitle');
+    if (el) el.textContent = t(key);
+    document.title = t(key);
+  }
+
+  var state = {
+    step: 1,
+    lang: 'nl',
+    format: 'toss', // 'toss' | 'splitToss' | 'americano'
+    playerCount: null,
+    levelCounts: [8, 8, 0],        // beginners / ervaren / gevorderden (0 = level unused)
+    courts: 2,
+    rounds: 7,
+    resultsEnabled: false,       // single-group (toss) results toggle
+    levelResults: [false, false, false],
+    regroupEnabled: false,
+    splitRound: 4,
+    names: [],
+    levelNames: [[], [], []],
+    activeRoster: [],
+    activeRosterLevels: [[], [], []],
+    pools: [],
+    scores: {},
+    splitDone: false,
+    boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
+    laterAdditions: {} // name -> true, for players added via Edit Players after initial creation
+  };
+
+  // ---------- helpers ----------
+  function shuffle(arr){
+    var a = arr.slice();
+    for (var i = a.length - 1; i > 0; i--){
+      var j = Math.floor(Math.random() * (i + 1));
+      var tmp = a[i]; a[i] = a[j]; a[j] = tmp;
+    }
+    return a;
+  }
+
+  function usableCourts(n, courtsAvailable){
+    return Math.max(1, Math.min(courtsAvailable, Math.floor(n / 4)));
+  }
+
+  // Fully random global-pool scheduler. Optional `seed` carries prior history
+  // ({rest, pairs, restDefault}) so a regenerated segment can take already-played
+  // rounds into account rather than starting fresh.
+  // courtsAvailable may be a single number (same every round) or an array with
+  // one entry per round. The array form lets a group's court share rotate
+  // between rounds, which is how uneven group sizes get evened out over the
+  // course of the session rather than within a single round.
+  function generateGlobalSchedule(players, rounds, roundOffset, courtsAvailable, seed){
+    var n = players.length;
+    var perRoundCourts = [];
+    for (var rc = 0; rc < rounds; rc++){
+      var want = Array.isArray(courtsAvailable)
+        ? (courtsAvailable[rc] !== undefined ? courtsAvailable[rc] : courtsAvailable[courtsAvailable.length - 1])
+        : courtsAvailable;
+      // 0 is a legitimate allocation: it means this level sits the round out so
+      // the other level can use every court, which is how play time gets evened
+      // up when courts can't be divided fairly (see allocateCourtsPerRound).
+      perRoundCourts.push(want <= 0 ? 0 : usableCourts(n, want));
+    }
+
+    // Fairness is tracked as cumulative PLAY count (not rest count). This matters
+    // once history is seeded: a player who already has real games under their
+    // belt and a player who has none should NOT be treated as equally entitled
+    // to rest going forward — the one with fewer total games needs priority to
+    // play until they catch up. Tracking play count directly (rather than an
+    // equivalent-looking rest count) makes that priority explicit and correct.
+    var playCount = players.map(function(name){
+      if (seed && seed.played && typeof seed.played[name] === 'number') return seed.played[name];
+      return (seed && typeof seed.playedDefault === 'number') ? seed.playedDefault : 0;
+    });
+    var partnerCount = [], opponentCount = [];
+    for (var i = 0; i < n; i++){ partnerCount.push(new Array(n).fill(0)); opponentCount.push(new Array(n).fill(0)); }
+    function pairKey(a, b){ return a < b ? a + '|' + b : b + '|' + a; }
+    if (seed && seed.pairs){
+      for (var i2 = 0; i2 < n; i2++){
+        for (var j2 = 0; j2 < n; j2++){
+          if (i2 === j2) continue;
+          var pk = pairKey(players[i2], players[j2]);
+          if (seed.pairs[pk]){
+            partnerCount[i2][j2] = seed.pairs[pk].p || 0;
+            opponentCount[i2][j2] = seed.pairs[pk].o || 0;
+          }
+        }
+      }
+    }
+
+    var out = [];
+    for (var r = 0; r < rounds; r++){
+      var activeCourts = perRoundCourts[r];
+      var slots = activeCourts * 4;
+      var indices = shuffle(Array.from({ length: n }, function(_, i){ return i; }));
+      indices.sort(function(a, b){ return playCount[a] - playCount[b]; }); // fewest games so far play first
+      var playing = shuffle(indices.slice(0, slots));
+      var sitOut = indices.slice(slots);
+      playing.forEach(function(idx){ playCount[idx]++; });
+
+      var courts = [];
+      for (var c = 0; c < activeCourts; c++){
+        var four = playing.slice(c * 4, c * 4 + 4);
+        var a = four[0], b = four[1], cc = four[2], d = four[3];
+        var options = [
+          { team1: [a, b], team2: [cc, d] },
+          { team1: [a, cc], team2: [b, d] },
+          { team1: [a, d], team2: [b, cc] }
+        ];
+        var best = null, bestScore = Infinity;
+        options.forEach(function(opt){
+          var p1 = opt.team1[0], p2 = opt.team1[1], p3 = opt.team2[0], p4 = opt.team2[1];
+          var partnerScore = partnerCount[p1][p2] + partnerCount[p3][p4];
+          var opponentScore = opponentCount[p1][p3] + opponentCount[p1][p4] + opponentCount[p2][p3] + opponentCount[p2][p4];
+          var score = partnerScore * 100 + opponentScore;
+          if (score < bestScore){ bestScore = score; best = opt; }
+        });
+        var t1 = best.team1, t2 = best.team2;
+        partnerCount[t1[0]][t1[1]]++; partnerCount[t1[1]][t1[0]]++;
+        partnerCount[t2[0]][t2[1]]++; partnerCount[t2[1]][t2[0]]++;
+        t1.forEach(function(x){ t2.forEach(function(y){ opponentCount[x][y]++; opponentCount[y][x]++; }); });
+        courts.push({ courtIndex: c + 1, team1: t1.map(function(idx){ return players[idx]; }), team2: t2.map(function(idx){ return players[idx]; }) });
+      }
+      out.push({ round: roundOffset + r + 1, courts: courts, resting: sitOut.map(function(idx){ return players[idx]; }) });
+    }
+    return out;
+  }
+
+  function splitCourtsBetween(totalCourts, sizeA, sizeB){
+    if (totalCourts < 2) return [totalCourts, totalCourts];
+    var totalSize = sizeA + sizeB;
+    var a = Math.round(totalCourts * (sizeA / totalSize));
+    a = Math.max(1, Math.min(totalCourts - 1, a));
+    var b = totalCourts - a;
+    return [a, b];
+  }
+
+  // Games per player over the session = (courts granted x 4 x rounds) / players,
+  // so equal play time means each group's court share should track its share of
+  // the players. That ideal share is almost never a whole number, and a fixed
+  // rounding permanently over-serves one group. Instead the fractional part is
+  // rotated round by round: a group entitled to 1.7 courts gets 2 in most
+  // rounds and 1 in the rest, so the average lands on target.
+  //
+  // Every group keeps at least one court in every round -- in a split toss both
+  // levels are meant to be playing at the same time, so benching a whole level
+  // to balance the numbers would be a worse outcome than the imbalance itself.
+  // When the minimum-one rule alone uses up all the courts, no rotation is
+  // possible and the groups' play time genuinely cannot be equalised; the
+  // Step 1 preview flags that case so it can be fixed by adding a court or
+  // moving a player between levels.
+  // How many courts a group can actually fill (0 if it can't even fill one).
+  function courtCapacity(size, totalCourts){
+    return Math.min(totalCourts, Math.floor(size / 4));
+  }
+
+  // A level can only ever fill floor(players / 4) courts. Handing it more just
+  // leaves courts standing empty, so every round's allocation is capped at what
+  // each level can actually use and the freed courts are handed to the levels
+  // that still have room. Without this a court sits idle whenever the maths
+  // hands a level a court it cannot fill -- e.g. 4 courts split over 7 / 8 / 6
+  // players, where the 7-player level is entitled to ~1.4 courts but can only
+  // ever fill one.
+  function fitRoundToCapacity(alloc, caps, totalCourts, priority){
+    var i;
+    for (i = 0; i < alloc.length; i++){
+      if (alloc[i] > caps[i]) alloc[i] = caps[i];
+      if (alloc[i] < 0) alloc[i] = 0;
+    }
+    var used = 0;
+    for (i = 0; i < alloc.length; i++) used += alloc[i];
+    var guard = 0;
+    while (used < totalCourts && guard++ < 200){
+      var best = -1;
+      for (var j = 0; j < alloc.length; j++){
+        if (alloc[j] >= caps[j]) continue;
+        if (best < 0 || priority[j] > priority[best]) best = j;
+      }
+      if (best < 0) break;   // every level is at capacity; the court can't be used
+      alloc[best] += 1;
+      used += 1;
+      priority[best] -= 1;
+    }
+    return alloc;
+  }
+
+  // Strategy 1: every level plays every round (at least one court each).
+  function allocEveryonePlays(totalCourts, sizes, rounds){
+    var n = sizes.length;
+    var caps = sizes.map(function(sz){ return courtCapacity(sz, totalCourts); });
+    var totalSize = sizes.reduce(function(x, y){ return x + y; }, 0);
+    var ideal = sizes.map(function(sz){ return totalCourts * (sz / totalSize); });
+    var base = ideal.map(function(v){ return Math.max(1, Math.floor(v)); });
+    var baseSum = base.reduce(function(x, y){ return x + y; }, 0);
+    if (baseSum > totalCourts){
+      // Not enough courts for every level to have one at the same time (e.g. a
+      // single court shared by two levels). Handing each of them a court anyway
+      // would schedule matches on courts that don't exist, so signal that this
+      // strategy is impossible and let the sit-out strategy alternate instead.
+      return null;
+    }
+    var spare = totalCourts - baseSum;
+    var want = ideal.map(function(v, i){ return v - base[i]; });
+    var carry = sizes.map(function(){ return 0; });
+    var out = sizes.map(function(){ return []; });
+    for (var r = 0; r < rounds; r++){
+      var alloc = base.slice();
+      for (var i = 0; i < n; i++) carry[i] += want[i];
+      for (var k = 0; k < spare; k++){
+        var best = 0;
+        for (var j = 1; j < n; j++){ if (carry[j] > carry[best]) best = j; }
+        alloc[best] += 1; carry[best] -= 1;
+      }
+      fitRoundToCapacity(alloc, caps, totalCourts, carry.slice());
+      for (var m = 0; m < n; m++) out[m].push(alloc[m]);
+    }
+    return out;
+  }
+
+  // Strategy 2: a level may sit out a whole round so the other level can take
+  // every court. This is the only way to even out play time when the courts
+  // cannot be divided in proportion to the group sizes -- e.g. 2 courts with 8
+  // beginners and 6 advanced, where both are stuck on one court each and the
+  // smaller group therefore plays more.
+  function allocWithSitOuts(totalCourts, sizes, rounds){
+    var n = sizes.length;
+    var caps = sizes.map(function(sz){ return courtCapacity(sz, totalCourts); });
+    var totalSize = sizes.reduce(function(x, y){ return x + y; }, 0);
+
+    // Highest games-per-player every group could reach equally, limited both by
+    // total court time and by each group's own capacity to fill courts.
+    var g = 4 * totalCourts * rounds / totalSize;
+    for (var i = 0; i < n; i++){
+      if (sizes[i] > 0) g = Math.min(g, 4 * rounds * caps[i] / sizes[i]);
+    }
+    var target = sizes.map(function(sz){ return g * sz / 4; }); // court-rounds owed
+    var got = sizes.map(function(){ return 0; });
+    var out = sizes.map(function(){ return []; });
+
+    // The opening rounds always have every level on court. A session that
+    // starts by telling one group to sit and watch reads as a mistake, however
+    // sound the arithmetic is -- the correction rounds are spread over the rest
+    // of the schedule instead, once play is clearly under way.
+    var PROTECTED_OPENING_ROUNDS = 2;
+
+    for (var r = 0; r < rounds; r++){
+      var alloc = sizes.map(function(){ return 0; });
+      var left = totalCourts;
+
+      if (r < PROTECTED_OPENING_ROUNDS){
+        for (var q = 0; q < n; q++){
+          if (left <= 0) break;
+          if (caps[q] >= 1){ alloc[q] = 1; left -= 1; }
+        }
+      }
+
+      while (left > 0){
+        var best = -1, bestDeficit = 0;
+        for (var k = 0; k < n; k++){
+          if (alloc[k] >= caps[k]) continue;
+          // Deficit expressed per player, so groups of different sizes compete fairly.
+          var deficit = sizes[k] > 0 ? (target[k] - got[k] - alloc[k]) / sizes[k] : 0;
+          if (deficit > bestDeficit){ bestDeficit = deficit; best = k; }
+        }
+        if (best < 0) break;
+        alloc[best] += 1; left -= 1;
+      }
+      // The greedy above only hands out courts to levels that are still owed
+      // play time; once nobody is owed any, remaining courts would sit empty.
+      // Give them to whoever can still use them -- extra games for a level that
+      // was going to sit out costs the others nothing.
+      var prio = [];
+      for (var q = 0; q < n; q++){
+        prio.push(sizes[q] > 0 ? (target[q] - got[q] - alloc[q]) / sizes[q] : 0);
+      }
+      fitRoundToCapacity(alloc, caps, totalCourts, prio);
+      for (var m = 0; m < n; m++){ got[m] += alloc[m]; out[m].push(alloc[m]); }
+    }
+    return out;
+  }
+
+  // Picks between the two strategies. Sitting a level out is only worth it if
+  // the WORST-OFF group actually ends up playing more; otherwise the "fairer"
+  // schedule would just be levelling everyone down to the unluckiest group,
+  // which nobody benefits from.
+  function allocateCourtsPerRound(totalCourts, sizes, rounds){
+    var everyone = allocEveryonePlays(totalCourts, sizes, rounds);
+    var sitOuts = allocWithSitOuts(totalCourts, sizes, rounds);
+    if (!everyone) return sitOuts;
+    var gEveryone = expectedGamesPerPlayer(everyone, sizes);
+    var gSitOuts = expectedGamesPerPlayer(sitOuts, sizes);
+    var worstEveryone = Math.min.apply(null, gEveryone);
+    var worstSitOuts = Math.min.apply(null, gSitOuts);
+    return (worstSitOuts > worstEveryone + 1e-9) ? sitOuts : everyone;
+  }
+
+  // Expected games per player per group, given a per-round court allocation.
+  function expectedGamesPerPlayer(allocation, sizes){
+    return allocation.map(function(arr, i){
+      var total = 0;
+      arr.forEach(function(c){ total += (c <= 0 ? 0 : usableCourts(sizes[i], c)) * 4; });
+      return sizes[i] > 0 ? total / sizes[i] : 0;
+    });
+  }
+
+  // Builds a fairness seed from already-played (frozen) rounds, for the
+  // players continuing into a regenerated segment. Veterans are seeded with
+  // their real play count so far; brand-new additions genuinely start at 0
+  // (not an average) since they truly haven't played any games in this pool yet.
+  function computeHistorySeed(frozenRounds, veteranNames){
+    var played = {}; veteranNames.forEach(function(p){ played[p] = 0; });
+    var pairs = {};
+    var vset = {}; veteranNames.forEach(function(n){ vset[n] = true; });
+    function pairKey(a, b){ return a < b ? a + '|' + b : b + '|' + a; }
+    function ensurePair(a, b){ var k = pairKey(a, b); if (!pairs[k]) pairs[k] = { p: 0, o: 0 }; return pairs[k]; }
+
+    frozenRounds.forEach(function(rd){
+      rd.courts.forEach(function(court){
+        court.team1.concat(court.team2).forEach(function(name){ if (played[name] !== undefined) played[name]++; });
+        if (vset[court.team1[0]] && vset[court.team1[1]]) ensurePair(court.team1[0], court.team1[1]).p++;
+        if (vset[court.team2[0]] && vset[court.team2[1]]) ensurePair(court.team2[0], court.team2[1]).p++;
+        court.team1.forEach(function(x){
+          court.team2.forEach(function(y){
+            if (vset[x] && vset[y]) ensurePair(x, y).o++;
+          });
+        });
+      });
+    });
+
+    return { played: played, pairs: pairs, playedDefault: 0 };
+  }
+
+  function findCutRound(pool){
+    for (var r = pool.startRound; r <= pool.endRound; r++){
+      var rd = pool.rounds[r - pool.startRound];
+      var complete = rd.courts.every(function(c){
+        var key = scoreKey(pool.id, c.courtIndex, rd.round);
+        var sc = state.scores[key];
+        return sc && typeof sc.t1 === 'number' && typeof sc.t2 === 'number';
+      });
+      if (!complete) return r;
+    }
+    return pool.endRound + 1;
+  }
+
+  function roundRangeText(a, b){
+    return a === b ? String(a) : (a + '\u2013' + b);
+  }
+
+  // ---------- step nav ----------
+  function goToStep(n){
+    state.step = n;
+    document.getElementById('panelEdit').classList.remove('visible');
+    [1,2,3].forEach(function(i){
+      document.getElementById('panel'+i).classList.toggle('visible', i === n);
+    });
+    document.querySelectorAll('#stepsNav .step').forEach(function(el){
+      var s = parseInt(el.getAttribute('data-step'), 10);
+      el.classList.toggle('active', s === n);
+      el.classList.toggle('done', s < n);
+    });
+    var hasSchedule = state.pools.length > 0;
+    var c1 = document.getElementById('cancelToScheduleBtn1');
+    var c2 = document.getElementById('cancelToScheduleBtn2');
+    if (c1) c1.style.display = hasSchedule ? '' : 'none';
+    if (c2) c2.style.display = hasSchedule ? '' : 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  // ---------- Language switch (Step 1 only) ----------
+  document.querySelectorAll('.lang-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.lang = btn.getAttribute('data-lang');
+      document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b === btn); });
+      applyStaticTranslations();
+      renderCourtsPreview();
+    });
+  });
+
+  // ---------- STEP 1 ----------
+  // The split-toss levels, in order. Everything downstream loops over this
+  // instead of naming the levels individually, so the count can change without
+  // touching the scheduling, leaderboard, play-count or roster-editing logic.
+  var LEVELS = [
+    { id: 'beginner',  cap: 'Beginner',  labelKey: 'beginnerLabel',  headingKey: 'beginnerPlayersHeading',  placeholderKey: 'namePlaceholderBeginner',  editKey: 'editPoolBeginner' },
+    { id: 'ervaren',   cap: 'Ervaren',   labelKey: 'ervarenLabel',   headingKey: 'ervarenPlayersHeading',   placeholderKey: 'namePlaceholderErvaren',   editKey: 'editPoolErvaren' },
+    { id: 'gevorderd', cap: 'Gevorderd', labelKey: 'gevorderdLabel', headingKey: 'gevorderdPlayersHeading', placeholderKey: 'namePlaceholderGevorderd', editKey: 'editPoolGevorderd' }
+  ];
+  function levelIndexById(id){
+    for (var i = 0; i < LEVELS.length; i++){ if (LEVELS[i].id === id) return i; }
+    return -1;
+  }
+  // Indices of the levels actually in play (a count of 0 means "not using this level").
+  function activeLevelIndexes(){
+    var out = [];
+    LEVELS.forEach(function(lv, i){ if (state.levelCounts[i] > 0) out.push(i); });
+    return out;
+  }
+
+  var playerCountInput = document.getElementById('playerCountInput');
+  var levelCountInputs = LEVELS.map(function(lv){ return document.getElementById(lv.id + 'CountInput'); });
+  var singlePlayersBlock = document.getElementById('singlePlayersBlock');
+  var splitPlayersBlock = document.getElementById('splitPlayersBlock');
+  var courtsPreview = document.getElementById('courtsPreview');
+  var countError = document.getElementById('countError');
+  var continueTo2Btn = document.getElementById('continueTo2');
+
+  function clampCount(v){
+    if (isNaN(v)) v = 16;
+    return Math.max(4, Math.min(96, v));
+  }
+  // Levels may be 0 (unused); anything else has to be a workable 4-96.
+  function clampLevelCount(v){
+    if (isNaN(v) || v <= 0) return 0;
+    return Math.max(4, Math.min(96, v));
+  }
+  function readLevelCounts(){
+    return levelCountInputs.map(function(inp){
+      var raw = inp.value;
+      if (raw === '') return NaN;
+      var v = parseInt(raw, 10);
+      return isNaN(v) ? NaN : v;
+    });
+  }
+  function levelCountsValid(counts){
+    var used = 0;
+    for (var i = 0; i < counts.length; i++){
+      var v = counts[i];
+      if (isNaN(v) || v < 0 || v > 96) return false;
+      if (v > 0 && v < 4) return false;
+      // Levels are a ladder, so they're used in order: a gap (Silver + Platinum
+      // with no Gold) would leave the middle rung of the ladder missing, which
+      // makes the naming meaningless and the level order arbitrary.
+      if (v > 0 && i > 0 && !(counts[i - 1] > 0)) return false;
+      if (v > 0) used++;
+    }
+    return used >= 2;
+  }
+
+  // Reflect that ladder in the controls: a level whose predecessor is unused is
+  // greyed out, so the rule is visible before it can be broken.
+  function syncLevelAvailability(){
+    var counts = readLevelCounts();
+    levelCountInputs.forEach(function(inp, i){
+      var blocked = i > 0 && !(counts[i - 1] > 0);
+      inp.disabled = blocked;
+      document.getElementById(LEVELS[i].id + 'CountMinus').disabled = blocked;
+      document.getElementById(LEVELS[i].id + 'CountPlus').disabled = blocked;
+      var col = inp.closest('.level-col');
+      if (col) col.classList.toggle('level-disabled', blocked);
+      if (blocked && inp.value !== '0') inp.value = 0;
+    });
+  }
+
+  document.querySelectorAll('.format-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.format = btn.getAttribute('data-format');
+      document.querySelectorAll('.format-btn').forEach(function(b){
+        b.classList.toggle('active', b === btn);
+      });
+      var isSplit = state.format === 'splitToss';
+      singlePlayersBlock.style.display = isSplit ? 'none' : '';
+      splitPlayersBlock.style.display = isSplit ? '' : 'none';
+      renderAppTitle();
+      renderCourtsPreview();
+    });
+  });
+  (function initFormatButton(){
+    var el = document.querySelector('.format-btn[data-format="' + state.format + '"]');
+    if (el) el.classList.add('active');
+  })();
+
+  function renderCourtsPreview(){
+    if (state.format === 'splitToss'){
+      syncLevelAvailability();
+      var counts = readLevelCounts();
+      var valid = levelCountsValid(counts);
+      countError.textContent = t('levelCountError');
+      countError.classList.toggle('visible', !valid);
+      continueTo2Btn.disabled = !valid;
+      if (!valid){ courtsPreview.innerHTML = ''; return; }
+
+      var used = [];
+      counts.forEach(function(c, i){ if (c > 0) used.push(i); });
+      var sizes = used.map(function(i){ return counts[i]; });
+
+      var previewRounds = state.rounds || 7;
+      var alloc = allocateCourtsPerRound(state.courts, sizes, previewRounds);
+      var games = expectedGamesPerPlayer(alloc, sizes);
+
+      // Per level: how many courts it gets when it plays, and in how many of
+      // the rounds it plays at all. Showing only the first round's figure was
+      // misleading whenever the allocation rotates.
+      var perLevel = used.map(function(levelIdx, k){
+        var effective = alloc[k].map(function(c){
+          return c <= 0 ? 0 : usableCourts(sizes[k], c);
+        });
+        var playing = effective.filter(function(c){ return c > 0; });
+        return {
+          levelIdx: levelIdx,
+          size: sizes[k],
+          minCourts: playing.length ? Math.min.apply(null, playing) : 0,
+          maxCourts: playing.length ? Math.max.apply(null, playing) : 0,
+          roundsPlaying: playing.length
+        };
+      });
+
+      // Fewer courts than levels means the levels can never all be on court at
+      // once -- they have to take turns, every single round. That is a very
+      // different thing from the occasional balancing sit-out, so it gets its
+      // own explanation rather than the "this round is different" wording.
+      var structural = used.length > state.courts;
+      var capacity = sizes.reduce(function(sum, sz){ return sum + courtCapacity(sz, state.courts); }, 0);
+      var unusable = state.courts - Math.min(state.courts, capacity);
+      var rotates = alloc.some(function(arr){ return arr.some(function(c){ return c !== arr[0]; }); });
+      var hasSitOuts = perLevel.some(function(L){ return L.roundsPlaying < previewRounds; });
+
+      var stats = '', lines = [];
+      perLevel.forEach(function(L){
+        var courtText = L.minCourts === L.maxCourts ? String(L.maxCourts) : (L.minCourts + '\u2013' + L.maxCourts);
+        var caption = t(LEVELS[L.levelIdx].labelKey);
+        if (L.roundsPlaying < previewRounds){
+          caption += ' \u00b7 ' + tf('levelPlaysRounds', { r: L.roundsPlaying, n: previewRounds });
+        }
+        stats += '<div class="courts-stat"><span class="courts-num">' + courtText +
+                 '</span><span class="courts-label">' + caption + '</span></div>';
+
+        // The court count can differ from round to round, so the number of
+        // players on court (and waiting) is a range rather than one figure.
+        var minSlots = L.minCourts * 4, maxSlots = L.maxCourts * 4;
+        var slotsText = minSlots === maxSlots ? String(maxSlots) : (minSlots + '\–' + maxSlots);
+        var restFew = L.size - maxSlots, restMany = L.size - minSlots;
+        var restText = '';
+        if (restMany > 0){
+          if (restFew === restMany) restText = tf('restingSuffix', { n: restMany });
+          else if (restFew <= 0) restText = tf('restingSuffixUpTo', { n: restMany });
+          else restText = tf('restingSuffixRange', { a: restFew, b: restMany });
+        }
+        if (L.roundsPlaying < previewRounds){
+          lines.push(tf('courtsNoteRotating', {
+            level: t(LEVELS[L.levelIdx].labelKey), r: L.roundsPlaying, n: previewRounds,
+            slots: slotsText, resting: restText
+          }));
+        } else {
+          lines.push(tf('courtsNoteLevel', {
+            level: t(LEVELS[L.levelIdx].labelKey), slots: slotsText, resting: restText
+          }));
+        }
+      });
+
+      var extra = '<br>' + t('courtsReshuffle');
+      if (unusable > 0){
+        extra += '<br><span class="courts-warn">' + tf('levelCapacityNote', {
+          usable: Math.min(state.courts, capacity), total: state.courts
+        }) + '</span>';
+      }
+      if (structural){
+        extra += '<br><span class="courts-warn">' + tf('courtsStructuralNote', {
+          levels: used.length,
+          courts: state.courts + ' ' + (state.courts === 1 ? t('courtUnitSingular') : t('courtUnitPlural')),
+          need: used.length + ' ' + (used.length === 1 ? t('courtUnitSingular') : t('courtUnitPlural'))
+        }) + '</span>';
+      } else if (hasSitOuts){
+        extra += '<br><span class="courts-fair">' + t('courtsSitOutNote') + '</span>';
+      } else if (rotates){
+        extra += '<br><span class="courts-fair">' + t('courtsRotateNote') + '</span>';
+      }
+      // One game's difference is just the normal rounding of a rotation -- with
+      // 4 rounds' worth of slots and an odd number of players somebody always
+      // ends up one ahead. Only flag it once the gap exceeds a full game, which
+      // is where players actually notice (3 games versus 5, not 4 versus 5).
+      var gap = Math.max.apply(null, games) - Math.min.apply(null, games);
+      if (gap > 1 + 1e-9){
+        var worstAt = 0;
+        games.forEach(function(g2, i2){ if (g2 < games[worstAt]) worstAt = i2; });
+        extra += '<br><span class="courts-warn">' + tf('courtsUnevenWarn', {
+          a: Math.round(Math.min.apply(null, games)),
+          b: Math.round(Math.max.apply(null, games)),
+          n: previewRounds,
+          group: t(LEVELS[used[worstAt]].labelKey)
+        }) + '</span>';
+      }
+
+      courtsPreview.innerHTML = stats + '<p class="courts-note">' + lines.join('<br>') + extra + '</p>';
+      return;
+    }
+
+    var raw = playerCountInput.value;
+    var v = parseInt(raw, 10);
+    var valid = raw !== '' && !isNaN(v) && v >= 4 && v <= 96;
+    countError.textContent = t('countError');
+    countError.classList.toggle('visible', !valid);
+    continueTo2Btn.disabled = !valid;
+    document.querySelectorAll('.chip').forEach(function(chip){
+      chip.classList.toggle('active', valid && parseInt(chip.getAttribute('data-count'), 10) === v);
+    });
+    if (!valid){ courtsPreview.innerHTML = ''; return; }
+
+    var active = usableCourts(v, state.courts);
+    var slots = active * 4;
+    var resting = v - slots;
+    var underused = state.courts > active;
+
+    var restingText = resting > 0 ? tf('restingSuffix', { n: resting }) : '';
+    var note = tf('courtsNote', { slots: slots, resting: restingText });
+    if (underused){
+      note = tf('courtsUnderused', { active: active, total: state.courts, n: v }) + note;
+    }
+    var courtWord = active > 1 ? t('courtUnitPlural') : t('courtUnitSingular');
+
+    courtsPreview.innerHTML =
+      '<div class="courts-stat"><span class="courts-num">' + active + '</span><span class="courts-label">' + courtWord + ' ' + t('courtsInUse') + '</span></div>' +
+      '<p class="courts-note">' + note + '</p>';
+  }
+
+  playerCountInput.addEventListener('input', renderCourtsPreview);
+  document.getElementById('countMinus').addEventListener('click', function(){
+    playerCountInput.value = clampCount(parseInt(playerCountInput.value, 10) - 1);
+    renderCourtsPreview();
+  });
+  document.getElementById('countPlus').addEventListener('click', function(){
+    playerCountInput.value = clampCount(parseInt(playerCountInput.value, 10) + 1);
+    renderCourtsPreview();
+  });
+  document.querySelectorAll('.chip').forEach(function(chip){
+    chip.addEventListener('click', function(){
+      playerCountInput.value = chip.getAttribute('data-count');
+      renderCourtsPreview();
+    });
+  });
+
+  LEVELS.forEach(function(lv, i){
+    var input = levelCountInputs[i];
+    input.addEventListener('input', renderCourtsPreview);
+    document.getElementById(lv.id + 'CountMinus').addEventListener('click', function(){
+      var cur = parseInt(input.value, 10);
+      // 1-3 players can never form a match, so stepping below the minimum of 4
+      // drops straight to 0 ("level not in use") instead of stalling at 4.
+      if (isNaN(cur) || cur <= 4) input.value = 0;
+      else input.value = clampLevelCount(cur - 1);
+      renderCourtsPreview();
+    });
+    document.getElementById(lv.id + 'CountPlus').addEventListener('click', function(){
+      var cur = parseInt(input.value, 10);
+      // Stepping up from an unused level jumps straight to the 4 needed for a match.
+      input.value = (isNaN(cur) || cur <= 0) ? 4 : clampLevelCount(cur + 1);
+      renderCourtsPreview();
+    });
+  });
+
+  // The four buttons (1-4) and the "5 or more" dropdown are two halves of one
+  // control: picking either clears the other, so exactly one court count is
+  // ever selected regardless of which half the user reached for.
+  var courtsMoreSelect = document.getElementById('courtsMoreSelect');
+  var courtsMoreWrap = courtsMoreSelect.parentNode;
+
+  function syncCourtSelection(){
+    document.querySelectorAll('.court-btn').forEach(function(b){
+      b.classList.toggle('active', parseInt(b.getAttribute('data-courts'), 10) === state.courts);
+    });
+    var viaDropdown = state.courts > 4;
+    courtsMoreWrap.classList.toggle('active', viaDropdown);
+    courtsMoreSelect.value = viaDropdown ? String(state.courts) : '';
+  }
+
+  document.querySelectorAll('.court-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      state.courts = parseInt(btn.getAttribute('data-courts'), 10);
+      syncCourtSelection();
+      renderCourtsPreview();
+    });
+  });
+
+  courtsMoreSelect.addEventListener('change', function(){
+    if (courtsMoreSelect.value === ''){
+      // Returning to the placeholder falls back to the highest button value,
+      // so the app is never left without a court count selected.
+      state.courts = 4;
+    } else {
+      state.courts = parseInt(courtsMoreSelect.value, 10);
+    }
+    syncCourtSelection();
+    renderCourtsPreview();
+  });
+
+  syncCourtSelection();
+
+  continueTo2Btn.addEventListener('click', function(){
+    if (state.format === 'splitToss'){
+      var counts = readLevelCounts();
+      if (!levelCountsValid(counts)){ renderCourtsPreview(); return; }
+      state.levelCounts = counts.map(function(c){ return c > 0 ? c : 0; });
+    } else {
+      var v = parseInt(playerCountInput.value, 10);
+      if (isNaN(v) || v < 4 || v > 96){ renderCourtsPreview(); return; }
+      state.playerCount = v;
+    }
+    buildNameInputs();
+    goToStep(2);
+  });
+
+  applyStaticTranslations();
+  renderCourtsPreview();
+
+  // ---------- STEP 2 ----------
+  var namesGrid = document.getElementById('namesGrid');
+  var levelNamesGrids = LEVELS.map(function(lv){ return document.getElementById('namesGrid' + lv.cap); });
+  var namesSingleBlock = document.getElementById('namesSingleBlock');
+  var namesSplitBlock = document.getElementById('namesSplitBlock');
+  var panel2Sub = document.getElementById('panel2Sub');
+  var roundsInput = document.getElementById('roundsInput');
+  var levelResultsToggles = LEVELS.map(function(lv){ return document.getElementById(lv.id + 'ResultsToggle'); });
+  var regroupToggle = document.getElementById('regroupToggle');
+  var regroupField = document.getElementById('regroupField');
+  var regroupHint = document.getElementById('regroupHint');
+  var splitRoundField = document.getElementById('splitRoundField');
+  var splitRoundInput = document.getElementById('splitRoundInput');
+
+  // Marks (and reports) duplicate names among a set of inputs. Comparison is
+  // a full trimmed, case-insensitive string match — "Jan S" and "Jan D" are
+  // different names and won't be flagged; only an exact match (ignoring case
+  // and surrounding spaces) counts as a duplicate. Blank fields are ignored.
+  function markDuplicatesAmong(inputs){
+    var counts = {};
+    inputs.forEach(function(inp){
+      var v = inp.value.trim().toLowerCase();
+      if (!v) return;
+      counts[v] = (counts[v] || 0) + 1;
+    });
+    var anyDup = false;
+    inputs.forEach(function(inp){
+      var v = inp.value.trim().toLowerCase();
+      var isDup = !!v && counts[v] > 1;
+      inp.classList.toggle('dup-name-input', isDup);
+      if (isDup) anyDup = true;
+    });
+    return anyDup;
+  }
+
+  var step2DupError = document.getElementById('step2DupError');
+
+  function checkStep2Duplicates(){
+    var container = state.format === 'splitToss' ? document.getElementById('namesSplitBlock') : document.getElementById('namesSingleBlock');
+    var inputs = Array.from(container.querySelectorAll('.name-field input'));
+    var hasDup = markDuplicatesAmong(inputs);
+    step2DupError.classList.toggle('visible', hasDup);
+    return hasDup;
+  }
+
+  // Level names live in state.levelNames[i]; this adapts the generic grid
+  // builder (which works on a named state key) to that array-of-arrays.
+  function buildOneLevelNamesGrid(levelIdx){
+    var lv = LEVELS[levelIdx];
+    var count = state.levelCounts[levelIdx];
+    var gridEl = levelNamesGrids[levelIdx];
+    gridEl.innerHTML = '';
+    var existing = state.levelNames[levelIdx];
+    var preserve = Array.isArray(existing) && existing.length === count;
+    if (!preserve) state.levelNames[levelIdx] = new Array(count).fill('');
+    for (var i = 0; i < count; i++){
+      var field = document.createElement('div');
+      field.className = 'name-field';
+      var idx = document.createElement('span');
+      idx.className = 'idx';
+      idx.textContent = (i + 1);
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = preserve ? (state.levelNames[levelIdx][i] || '') : '';
+      input.placeholder = tf(lv.placeholderKey, { n: i + 1 });
+      input.setAttribute('data-i', i);
+      input.setAttribute('aria-label', tf(lv.placeholderKey, { n: i + 1 }));
+      input.addEventListener('input', function(e){
+        var i2 = parseInt(e.target.getAttribute('data-i'), 10);
+        state.levelNames[levelIdx][i2] = e.target.value;
+        checkStep2Duplicates();
+      });
+      field.appendChild(idx);
+      field.appendChild(input);
+      gridEl.appendChild(field);
+    }
+    checkStep2Duplicates();
+  }
+
+  function buildOneNamesGrid(gridEl, count, namesArrayKey, placeholderKey){
+    placeholderKey = placeholderKey || 'namePlaceholder';
+    gridEl.innerHTML = '';
+    var existing = state[namesArrayKey];
+    var preserve = Array.isArray(existing) && existing.length === count;
+    if (!preserve) state[namesArrayKey] = new Array(count).fill('');
+    for (var i = 0; i < count; i++){
+      var field = document.createElement('div');
+      field.className = 'name-field';
+      var idx = document.createElement('span');
+      idx.className = 'idx';
+      idx.textContent = (i + 1);
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.value = preserve ? (state[namesArrayKey][i] || '') : '';
+      input.placeholder = tf(placeholderKey, { n: i + 1 });
+      input.setAttribute('data-i', i);
+      input.setAttribute('aria-label', tf(placeholderKey, { n: i + 1 }));
+      (function(key){
+        input.addEventListener('input', function(e){
+          var i2 = parseInt(e.target.getAttribute('data-i'), 10);
+          state[key][i2] = e.target.value;
+          checkStep2Duplicates();
+        });
+      })(namesArrayKey);
+      field.appendChild(idx);
+      field.appendChild(input);
+      gridEl.appendChild(field);
+    }
+    checkStep2Duplicates();
+  }
+
+  // Only Americano always tracks results. Plain Toss never does; Split Toss
+  // uses its own two independent per-group toggles instead of this flag.
+  function effectiveResultsEnabled(){
+    return state.format === 'americano';
+  }
+
+  function updateRegroupEligibility(){
+    var n = state.playerCount || 0;
+    var canRegroup = n >= 8 && state.courts >= 2;
+    regroupToggle.disabled = !canRegroup;
+    regroupField.classList.toggle('disabled', !canRegroup);
+    regroupHint.textContent = canRegroup ? t('regroupHintEnabled') : t('regroupHintDisabled');
+    if (!canRegroup){
+      regroupToggle.checked = false;
+      state.regroupEnabled = false;
+      splitRoundField.classList.add('collapsed');
+    }
+    syncSplitRoundBounds();
+  }
+
+  function buildNameInputs(){
+    var isSplit = state.format === 'splitToss';
+    namesSingleBlock.style.display = isSplit ? 'none' : '';
+    namesSplitBlock.style.display = isSplit ? '' : 'none';
+
+    if (isSplit){
+      var used = activeLevelIndexes();
+      LEVELS.forEach(function(lv, i){
+        var group = document.getElementById('namesGroup' + lv.cap);
+        var inUse = state.levelCounts[i] > 0;
+        group.style.display = inUse ? '' : 'none';
+        if (inUse) buildOneLevelNamesGrid(i);
+        levelResultsToggles[i].checked = state.levelResults[i];
+      });
+
+      var sizes = used.map(function(i){ return state.levelCounts[i]; });
+      var courtSplit = allocateCourtsPerRound(state.courts, sizes, state.rounds || 7);
+      panel2Sub.textContent = used.map(function(levelIdx, k){
+        var active = courtSplit[k][0] <= 0 ? 0 : usableCourts(sizes[k], courtSplit[k][0]);
+        return t(LEVELS[levelIdx].labelKey) + ': ' + sizes[k] + ' (' + active + ' ' +
+          (active > 1 ? t('courtUnitPlural') : t('courtUnitSingular')) + ')';
+      }).join('  \u00b7  ');
+
+      regroupField.classList.add('collapsed');
+      splitRoundField.classList.add('collapsed');
+      return;
+    }
+
+    var n = state.playerCount;
+    var active = usableCourts(n, state.courts);
+    var slots = active * 4;
+    var resting = n - slots;
+    var courtWord = active > 1 ? t('courtUnitPlural') : t('courtUnitSingular');
+    var restingText = resting > 0 ? tf('restingSuffix', { n: resting }) : '';
+    panel2Sub.textContent = tf('p2SubTemplate', { n: n, courts: state.courts + ' ' + (state.courts > 1 ? t('courtUnitPlural') : t('courtUnitSingular')), active: active + ' ' + courtWord, resting: restingText });
+    buildOneNamesGrid(namesGrid, n, 'names');
+
+    if (state.format === 'americano'){
+      state.resultsEnabled = true;
+      regroupField.classList.remove('collapsed');
+      updateRegroupEligibility();
+    } else { // toss: no results, ever, so no regroup either
+      state.resultsEnabled = false;
+      state.regroupEnabled = false;
+      regroupToggle.checked = false;
+      regroupField.classList.add('collapsed');
+      splitRoundField.classList.add('collapsed');
+    }
+  }
+
+  levelResultsToggles.forEach(function(toggle, i){
+    toggle.addEventListener('change', function(e){
+      state.levelResults[i] = e.target.checked;
+    });
+  });
+
+  function syncSplitRoundBounds(){
+    var rounds = parseInt(roundsInput.value, 10) || 7;
+    var maxSplit = Math.max(1, rounds - 1);
+    splitRoundInput.max = String(maxSplit);
+    var v = parseInt(splitRoundInput.value, 10);
+    if (isNaN(v)) v = Math.max(1, Math.round(rounds / 2));
+    v = Math.max(1, Math.min(maxSplit, v));
+    splitRoundInput.value = v;
+    state.splitRound = v;
+  }
+
+  document.getElementById('roundsMinus').addEventListener('click', function(){
+    var v = Math.max(4, parseInt(roundsInput.value, 10) - 1);
+    roundsInput.value = v; state.rounds = v;
+    syncSplitRoundBounds();
+  });
+  document.getElementById('roundsPlus').addEventListener('click', function(){
+    var v = Math.min(16, parseInt(roundsInput.value, 10) + 1);
+    roundsInput.value = v; state.rounds = v;
+    syncSplitRoundBounds();
+  });
+  roundsInput.addEventListener('change', function(){
+    var v = parseInt(roundsInput.value, 10);
+    if (isNaN(v)) v = 7;
+    v = Math.max(4, Math.min(16, v));
+    roundsInput.value = v; state.rounds = v;
+    syncSplitRoundBounds();
+  });
+
+  regroupToggle.addEventListener('change', function(e){
+    state.regroupEnabled = e.target.checked;
+    splitRoundField.classList.toggle('collapsed', !e.target.checked);
+    if (e.target.checked) syncSplitRoundBounds();
+  });
+  document.getElementById('splitRoundMinus').addEventListener('click', function(){
+    var v = Math.max(1, parseInt(splitRoundInput.value, 10) - 1);
+    splitRoundInput.value = v; state.splitRound = v;
+  });
+  document.getElementById('splitRoundPlus').addEventListener('click', function(){
+    var maxSplit = parseInt(splitRoundInput.max, 10) || (state.rounds - 1);
+    var v = Math.min(maxSplit, parseInt(splitRoundInput.value, 10) + 1);
+    splitRoundInput.value = v; state.splitRound = v;
+  });
+  splitRoundInput.addEventListener('change', function(){
+    syncSplitRoundBounds();
+  });
+
+  document.getElementById('backTo1').addEventListener('click', function(){ goToStep(1); });
+  document.getElementById('cancelToScheduleBtn1').addEventListener('click', function(){ goToStep(3); });
+  document.getElementById('cancelToScheduleBtn2').addEventListener('click', function(){ goToStep(3); });
+
+  function runGenerate(){
+    if (state.format === 'splitToss'){
+      var rosters = activeLevelIndexes().map(function(levelIdx){
+        var lv = LEVELS[levelIdx];
+        return {
+          levelIdx: levelIdx,
+          names: (state.levelNames[levelIdx] || []).map(function(nm, i){
+            var val = (nm || '').trim();
+            // Placeholders are level-specific so two blank fields in different
+            // levels can never resolve to the same player identity.
+            return val ? val : tf(lv.placeholderKey, { n: i + 1 });
+          })
+        };
+      });
+      buildScheduleSplit(rosters);
+    } else {
+      var trimmed = state.names.map(function(nm, i){
+        var val = (nm || '').trim();
+        return val ? val : tf('namePlaceholder', { n: i + 1 });
+      });
+      buildSchedule(trimmed);
+    }
+    goToStep(3);
+  }
+
+  document.getElementById('generateBtn').addEventListener('click', function(){
+    if (checkStep2Duplicates()) return;
+    if (state.pools.length > 0){
+      showConfirmModal(t('modalRegenerateText'), t('confirmRegenerateBtn'), runGenerate);
+    } else {
+      runGenerate();
+    }
+  });
+
+  // ---------- STEP 3 ----------
+  function buildSchedule(names){
+    var pool = shuffle(names);
+    var totalRounds = state.rounds;
+    var hasResults = effectiveResultsEnabled();
+    var split = (state.regroupEnabled && hasResults && state.playerCount >= 8 && state.courts >= 2) ? state.splitRound : totalRounds;
+    state.totalRoundsPlanned = totalRounds;
+    state.splitRoundStored = split;
+    state.splitDone = false;
+    state.activeRoster = pool.slice();
+
+    var mainRounds = generateGlobalSchedule(pool, split, 0, state.courts);
+    state.pools = [
+      { id: 'main', label: null, players: pool.slice(), courts: state.courts, resultsEnabled: hasResults, startRound: 1, endRound: split, rounds: mainRounds }
+    ];
+    state.scores = {};
+
+    renderMeta();
+    renderSchedule();
+    renderLeaderboard();
+  }
+
+  function buildScheduleSplit(rosters){
+    var totalRounds = state.rounds;
+    state.totalRoundsPlanned = totalRounds;
+    state.splitDone = false;
+
+    state.activeRosterLevels = [[], [], []];
+    rosters.forEach(function(r){ state.activeRosterLevels[r.levelIdx] = r.names.slice(); });
+
+    // Court share rotates per round (and a level may sit a round out) so every
+    // level ends up with comparable play time even when the group sizes differ
+    // -- see allocateCourtsPerRound.
+    var sizes = rosters.map(function(r){ return r.names.length; });
+    var alloc = allocateCourtsPerRound(state.courts, sizes, totalRounds);
+
+    var pools = rosters.map(function(r, k){
+      var pool = shuffle(r.names);
+      return {
+        levelIdx: r.levelIdx,
+        pool: pool,
+        courts: alloc[k],
+        rounds: generateGlobalSchedule(pool, totalRounds, 0, alloc[k])
+      };
+    });
+
+    // Court numbers run consecutively across the levels, and because each
+    // level's court count varies per round the offset has to be recomputed
+    // for every round. usableCourts() floors at 1, so a level sitting the
+    // round out (0 courts) is guarded explicitly rather than counted as one.
+    for (var r = 0; r < totalRounds; r++){
+      var offset = 0;
+      pools.forEach(function(entry){
+        entry.rounds[r].courts.forEach(function(c){ c.courtIndex += offset; });
+        offset += entry.courts[r] <= 0 ? 0 : usableCourts(entry.pool.length, entry.courts[r]);
+      });
+    }
+
+    state.pools = pools.map(function(entry){
+      var lv = LEVELS[entry.levelIdx];
+      return {
+        id: lv.id,
+        label: lv.cap,
+        players: entry.pool.slice(),
+        courts: entry.courts,
+        resultsEnabled: state.levelResults[entry.levelIdx],
+        startRound: 1,
+        endRound: totalRounds,
+        rounds: entry.rounds
+      };
+    });
+    state.scores = {};
+
+    renderMeta();
+    renderSchedule();
+    renderLeaderboard();
+  }
+
+  function renderMeta(){
+    var m = document.getElementById('metaStrip');
+    m.style.display = 'flex';
+    var parts = [];
+    if (state.format === 'splitToss'){
+      activeLevelIndexes().forEach(function(i){
+        parts.push('<span>' + t(LEVELS[i].labelKey) + ': ' + state.levelCounts[i] + '</span>');
+      });
+    } else {
+      parts.push('<span>' + state.playerCount + ' ' + t('p1PlayersUnit') + '</span>');
+    }
+    parts.push('<span>' + state.courts + ' ' + (state.courts > 1 ? t('courtUnitPlural') : t('courtUnitSingular')) + '</span>');
+    parts.push('<span>' + state.totalRoundsPlanned + ' \u00d7 ' + t('roundLabel').toLowerCase() + '</span>');
+    if (state.format !== 'splitToss' && state.regroupEnabled && effectiveResultsEnabled() && state.playerCount >= 8 && state.courts >= 2){
+      parts.push('<span>' + tf('splitAfterLabel', {}) + ' ' + state.splitRoundStored + '</span>');
+    }
+    m.innerHTML = parts.join('');
+  }
+
+  function scoreKey(poolId, courtIndex, round){ return poolId + '-' + courtIndex + '-' + round; }
+
+  function poolDisplayLabel(pool){
+    if (pool.id === 'top') return t('poolLabelTop');
+    if (pool.id === 'bottom') return t('poolLabelBottom');
+    var li = levelIndexById(pool.id);
+    if (li >= 0) return t(LEVELS[li].labelKey);
+    return pool.label;
+  }
+
+  function buildMatchCard(pool, round, court){
+    var card = document.createElement('div');
+    card.className = 'match-card';
+
+    var label = document.createElement('div');
+    label.className = 'court-label';
+    label.textContent = t('courtLabel') + ' ' + court.courtIndex;
+    card.appendChild(label);
+
+    var body = document.createElement('div');
+    body.className = 'match-body';
+
+    var teamsRow = document.createElement('div');
+    teamsRow.className = 'teams-row';
+    teamsRow.innerHTML =
+      '<div class="team">' +
+        '<div class="players">' + court.team1[0] + '</div>' +
+        '<div class="players">' + court.team1[1] + '</div>' +
+      '</div>' +
+      '<div class="vs">' + t('vsLabel') + '</div>' +
+      '<div class="team team-right">' +
+        '<div class="players">' + court.team2[0] + '</div>' +
+        '<div class="players">' + court.team2[1] + '</div>' +
+      '</div>';
+    body.appendChild(teamsRow);
+
+    if (pool.resultsEnabled){
+      var key = scoreKey(pool.id, court.courtIndex, round);
+      var scoreRow = document.createElement('div');
+      scoreRow.className = 'score-row';
+      var in1 = document.createElement('input');
+      in1.type = 'number'; in1.min = '0'; in1.inputMode = 'numeric';
+      in1.setAttribute('aria-label', court.team1.join(' & '));
+      in1.setAttribute('data-key', key); in1.setAttribute('data-team', 't1');
+      var dash = document.createElement('span');
+      dash.className = 'score-dash'; dash.textContent = '\u2013';
+      var in2 = document.createElement('input');
+      in2.type = 'number'; in2.min = '0'; in2.inputMode = 'numeric';
+      in2.setAttribute('aria-label', court.team2.join(' & '));
+      in2.setAttribute('data-key', key); in2.setAttribute('data-team', 't2');
+
+      [in1, in2].forEach(function(inp){
+        inp.addEventListener('input', function(e){
+          var k = e.target.getAttribute('data-key');
+          var team = e.target.getAttribute('data-team');
+          var val = e.target.value === '' ? null : parseInt(e.target.value, 10);
+          if (!state.scores[k]) state.scores[k] = { t1: null, t2: null };
+          state.scores[k][team] = (val === null || isNaN(val)) ? null : val;
+          renderLeaderboard();
+        });
+      });
+
+      var scoreLeftSpacer = document.createElement('div');
+      scoreLeftSpacer.className = 'score-spacer';
+      var scoreGroup = document.createElement('div');
+      scoreGroup.className = 'score-inputs';
+      scoreGroup.appendChild(in1);
+      scoreGroup.appendChild(dash);
+      scoreGroup.appendChild(in2);
+      var scoreRightSpacer = document.createElement('div');
+      scoreRightSpacer.className = 'score-spacer';
+
+      scoreRow.appendChild(scoreLeftSpacer);
+      scoreRow.appendChild(scoreGroup);
+      scoreRow.appendChild(scoreRightSpacer);
+      body.appendChild(scoreRow);
+    }
+
+    card.appendChild(body);
+    return card;
+  }
+
+  function buildCheckpointCard(){
+    var card = document.createElement('div');
+    card.className = 'checkpoint-card';
+    card.innerHTML =
+      '<div class="cp-eyebrow">' + t('cpEyebrow') + '</div>' +
+      '<h4>' + t('cpHeading') + '</h4>' +
+      '<p>' + t('cpBody') + '</p>';
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-primary';
+    btn.type = 'button';
+    btn.textContent = t('cpButton');
+    var err = document.createElement('p');
+    err.className = 'error-msg';
+    err.textContent = tf('cpError', { n: state.splitRoundStored });
+    btn.addEventListener('click', function(){
+      var ok = doSplit();
+      err.classList.toggle('visible', !ok);
+    });
+    card.appendChild(btn);
+    card.appendChild(err);
+    return card;
+  }
+
+  function renderSchedule(){
+    var col = document.getElementById('roundsCol');
+    col.innerHTML = '';
+
+    var maxRound = 0;
+    state.pools.forEach(function(p){ maxRound = Math.max(maxRound, p.endRound); });
+
+    for (var r = 1; r <= maxRound; r++){
+      var block = document.createElement('div');
+      block.className = 'round-block';
+
+      var head = document.createElement('div');
+      head.className = 'round-head';
+      head.innerHTML = '<span class="round-num">' + t('roundLabel') + ' ' + String(r).padStart(2, '0') + '</span><span class="round-line"></span>';
+      block.appendChild(head);
+
+      state.pools.forEach(function(pool){
+        if (r < pool.startRound || r > pool.endRound) return;
+        var rd = pool.rounds[r - pool.startRound];
+        if (!rd) return;
+
+        if (pool.label){
+          var lab = document.createElement('div');
+          // Colour by the level's name: the Americano halftime split produces
+          // a Gold and a Silver group, so those map onto the same colours.
+          var poolClass = '';
+          if (pool.id === 'beginner' || pool.id === 'bottom') poolClass = 'lv-silver';
+          else if (pool.id === 'ervaren' || pool.id === 'top') poolClass = 'lv-gold';
+          else if (pool.id === 'gevorderd') poolClass = 'lv-platinum';
+          lab.className = 'pool-label ' + poolClass;
+          lab.textContent = poolDisplayLabel(pool);
+          block.appendChild(lab);
+        }
+
+        // A level with no courts this round is sitting out on purpose, to even
+        // out play time across the levels. Say so explicitly, otherwise the
+        // round just looks broken.
+        if (!rd.courts.length && rd.resting && rd.resting.length){
+          var sitOut = document.createElement('div');
+          sitOut.className = 'sitout-note';
+          // With fewer courts than levels this is simply how every round looks,
+          // so calling it "different" would be wrong; only call it out as a
+          // one-off when the levels normally do all play at the same time.
+          var structuralShortage = state.pools.length > state.courts;
+          if (structuralShortage){
+            sitOut.innerHTML = '<b>' + tf('sitOutTurnTitle', { level: poolDisplayLabel(pool) }) + '</b> ' +
+              tf('sitOutTurnBody', {
+                levels: state.pools.length,
+                courts: state.courts + ' ' + (state.courts === 1 ? t('courtUnitSingular') : t('courtUnitPlural'))
+              });
+          } else {
+            sitOut.innerHTML = '<b>' + t('sitOutTitle') + '</b> ' + t('sitOutBody');
+          }
+          block.appendChild(sitOut);
+        }
+
+        var grid = document.createElement('div');
+        grid.className = 'courts-grid';
+        rd.courts.forEach(function(court){
+          grid.appendChild(buildMatchCard(pool, r, court));
+        });
+        block.appendChild(grid);
+
+        if (rd.resting && rd.resting.length){
+          var resting = document.createElement('div');
+          resting.className = 'resting-line';
+          var prefix = pool.label ? poolDisplayLabel(pool) + t('restingPoolSuffix') : t('restingPrefix');
+          resting.innerHTML = prefix + '<b>' + rd.resting.join(', ') + '</b>';
+          block.appendChild(resting);
+        }
+      });
+
+      col.appendChild(block);
+
+      if (state.regroupEnabled && !state.splitDone && r === state.splitRoundStored && state.splitRoundStored < state.totalRoundsPlanned){
+        col.appendChild(buildCheckpointCard());
+      }
+    }
+
+    document.querySelectorAll('.score-row input').forEach(function(inp){
+      var k = inp.getAttribute('data-key');
+      var team = inp.getAttribute('data-team');
+      if (state.scores[k] && typeof state.scores[k][team] === 'number'){
+        inp.value = state.scores[k][team];
+      }
+    });
+
+    var boardCol = document.getElementById('boardCol');
+    var anyResults = state.pools.some(function(p){ return p.resultsEnabled; });
+    boardCol.style.display = anyResults ? '' : 'none';
+  }
+
+  function activeRosterForPool(poolId){
+    var li = levelIndexById(poolId);
+    if (li >= 0) return state.activeRosterLevels[li];
+    return state.activeRoster;
+  }
+
+  // Counts scheduled appearances per player across ALL pools/rounds, regardless
+  // of whether that pool tracks results — this is purely about how many matches
+  // each player is scheduled for, for a quick fairness check.
+  function computePlayCounts(poolFilter){
+    var counts = {};
+    state.pools.forEach(function(pool){
+      if (poolFilter && pool.id !== poolFilter) return;
+      pool.players.forEach(function(name){
+        if (!counts[name]) counts[name] = { name: name, played: 0, group: pool.id };
+        else counts[name].group = pool.id;
+      });
+      pool.rounds.forEach(function(rd){
+        rd.courts.forEach(function(court){
+          court.team1.concat(court.team2).forEach(function(name){
+            counts[name].played++;
+          });
+        });
+      });
+    });
+    Object.keys(counts).forEach(function(name){
+      var roster = activeRosterForPool(counts[name].group);
+      if (roster.indexOf(name) === -1) counts[name].group = 'out';
+    });
+    return counts;
+  }
+
+  var playcountVisible = false;
+  var playcountSort = {}; // sortKey -> {col:'name'|'group'|'played', dir:'asc'|'desc'}
+  var playcountToggleBtn = document.getElementById('playcountToggleBtn');
+  var playcountPanel = document.getElementById('playcountPanel');
+
+  function playcountGroupLabel(group){
+    if (group === 'top') return t('grpTop');
+    if (group === 'bottom') return t('grpBottom');
+    if (group === 'out') return t('grpOut');
+    return '';
+  }
+
+  // Out (removed) players always sink to the bottom, regardless of which
+  // column is sorted or in which direction — the chosen sort only orders
+  // within the "still active" and "out" groups separately.
+  // Player names nearly always end in a number ("Zilver 2", "Zilver 10"), and a
+  // plain text sort puts 10 before 2 because it compares character by character.
+  // Comparing numerically keeps 2 before 10, which is what anyone reading a
+  // player list expects.
+  function compareNames(a, b){
+    return String(a).localeCompare(String(b), undefined, { numeric: true, sensitivity: 'base' });
+  }
+
+  function sortPlaycountRows(rows, sortState){
+    var mult = sortState.dir === 'asc' ? 1 : -1;
+    return rows.slice().sort(function(a, b){
+      if ((a.group === 'out') !== (b.group === 'out')) return a.group === 'out' ? 1 : -1;
+      var diff;
+      if (sortState.col === 'played'){
+        diff = a.played - b.played;
+      } else if (sortState.col === 'group'){
+        diff = compareNames(playcountGroupLabel(a.group), playcountGroupLabel(b.group));
+      } else {
+        diff = compareNames(a.name, b.name);
+      }
+      if (diff !== 0) return diff * mult;
+      return compareNames(a.name, b.name);
+    });
+  }
+
+  function buildPlaycountSection(title, rows, sortKey, showGroupCol){
+    var wrap = document.createElement('div');
+    wrap.className = 'playcount-section';
+
+    if (title){
+      var h = document.createElement('div');
+      h.className = 'playcount-section-title';
+      h.textContent = title;
+      wrap.appendChild(h);
+    }
+
+    if (rows.length){
+      var played = rows.map(function(r){ return r.played; });
+      var summary = document.createElement('div');
+      summary.className = 'playcount-summary';
+      summary.textContent = tf('playcountSummary', { min: Math.min.apply(null, played), max: Math.max.apply(null, played) });
+      wrap.appendChild(summary);
+    }
+
+    if (!playcountSort[sortKey]) playcountSort[sortKey] = { col: 'name', dir: 'asc' };
+    var sortState = playcountSort[sortKey];
+    var sortedRows = sortPlaycountRows(rows, sortState);
+
+    var table = document.createElement('table');
+    table.className = 'playcount-table';
+    var thead = document.createElement('thead');
+    var headRow = document.createElement('tr');
+
+    function makeTh(label, colKey, alignRight){
+      var th = document.createElement('th');
+      th.className = 'sortable-th';
+      if (alignRight) th.style.textAlign = 'right';
+      var arrow = (sortState.col === colKey) ? (sortState.dir === 'asc' ? ' \u25B2' : ' \u25BC') : '';
+      th.textContent = label + arrow;
+      th.addEventListener('click', function(){
+        if (playcountSort[sortKey].col === colKey){
+          playcountSort[sortKey].dir = playcountSort[sortKey].dir === 'asc' ? 'desc' : 'asc';
+        } else {
+          playcountSort[sortKey] = { col: colKey, dir: 'asc' };
+        }
+        renderPlayCounts();
+      });
+      return th;
+    }
+
+    headRow.appendChild(makeTh(t('thPlayer'), 'name', false));
+    if (showGroupCol) headRow.appendChild(makeTh(t('thGroup'), 'group', false));
+    headRow.appendChild(makeTh(t('playcountColHeader'), 'played', true));
+    thead.appendChild(headRow);
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    sortedRows.forEach(function(row){
+      var tr = document.createElement('tr');
+      if (row.group === 'out') tr.className = 'is-out';
+
+      var nameHtml = row.name;
+      if (!showGroupCol && row.group === 'out'){
+        nameHtml += '<span class="out-tag-pc">' + t('grpOut') + '</span>';
+      }
+      if (state.laterAdditions[row.name] && row.group !== 'out'){
+        nameHtml += '<span class="added-tag">' + t('playcountAddedTag') + '</span>';
+      }
+
+      var cells = '<td>' + nameHtml + '</td>';
+      if (showGroupCol) cells += '<td class="grp-tag">' + playcountGroupLabel(row.group) + '</td>';
+      cells += '<td>' + row.played + '</td>';
+      tr.innerHTML = cells;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+    return wrap;
+  }
+
+  function renderPlayCounts(){
+    var container = document.getElementById('playcountTables');
+    container.innerHTML = '';
+
+    if (state.format === 'splitToss'){
+      LEVELS.map(function(lv){ return { id: lv.id, label: t(lv.labelKey) }; }).forEach(function(g){
+        var pool = state.pools.filter(function(p){ return p.id === g.id; })[0];
+        if (!pool) return;
+        var counts = computePlayCounts(g.id);
+        var rows = Object.keys(counts).map(function(k){ return counts[k]; });
+        container.appendChild(buildPlaycountSection(g.label, rows, g.id, false));
+      });
+    } else {
+      var counts = computePlayCounts();
+      var rows = Object.keys(counts).map(function(k){ return counts[k]; });
+      container.appendChild(buildPlaycountSection(null, rows, 'all', true));
+    }
+  }
+
+  playcountToggleBtn.addEventListener('click', function(){
+    playcountVisible = !playcountVisible;
+    playcountPanel.style.display = playcountVisible ? '' : 'none';
+    playcountToggleBtn.textContent = playcountVisible ? t('playcountToggleHide') : t('playcountToggleShow');
+    if (playcountVisible) renderPlayCounts();
+  });
+
+  function computeTotals(poolFilter){
+    var totals = {};
+    var h2h = {};
+    function bumpH2H(a, b, amount){
+      if (!h2h[a]) h2h[a] = {};
+      h2h[a][b] = (h2h[a][b] || 0) + amount;
+    }
+
+    state.pools.forEach(function(pool){
+      if (!pool.resultsEnabled) return;
+      if (poolFilter && pool.id !== poolFilter) return;
+      pool.players.forEach(function(name){
+        if (!totals[name]) totals[name] = { name: name, points: 0, played: 0, forPts: 0, againstPts: 0, group: pool.id };
+        else totals[name].group = pool.id;
+      });
+      pool.rounds.forEach(function(rd){
+        rd.courts.forEach(function(court){
+          var key = scoreKey(pool.id, court.courtIndex, rd.round);
+          var sc = state.scores[key];
+          court.team1.forEach(function(name){
+            totals[name].played++;
+            if (sc && typeof sc.t1 === 'number') totals[name].points += sc.t1;
+          });
+          court.team2.forEach(function(name){
+            totals[name].played++;
+            if (sc && typeof sc.t2 === 'number') totals[name].points += sc.t2;
+          });
+          if (sc && typeof sc.t1 === 'number' && typeof sc.t2 === 'number'){
+            var diff = sc.t1 - sc.t2;
+            court.team1.forEach(function(name){ totals[name].forPts += sc.t1; totals[name].againstPts += sc.t2; });
+            court.team2.forEach(function(name){ totals[name].forPts += sc.t2; totals[name].againstPts += sc.t1; });
+            court.team1.forEach(function(a){
+              court.team2.forEach(function(b){
+                bumpH2H(a, b, diff);
+                bumpH2H(b, a, -diff);
+              });
+            });
+          }
+        });
+      });
+    });
+
+    // mark players no longer in their pool's active roster
+    Object.keys(totals).forEach(function(name){
+      var roster = activeRosterForPool(totals[name].group);
+      if (roster.indexOf(name) === -1) totals[name].group = 'out';
+    });
+
+    // Reference game count = the most common number of games played among
+    // still-active players in this scope (ties broken toward the LARGER
+    // value — ordinary fair rotation can easily produce an even split, e.g.
+    // exactly half the group resting one extra time when the rounds don't
+    // divide evenly; that's normal variance, not a disparity worth
+    // correcting). Anyone who played MORE than this gets their points/diff
+    // scaled down proportionally, for a fair comparison against players who
+    // simply had more opportunities.
+    //
+    // Below the reference, direction depends on WHY: a player who left (out)
+    // or joined later chose/was dealt that shorter run deliberately, so
+    // extrapolating their score upward would just reward a lucky small
+    // sample — they keep their raw points, unmarked. But a player who was
+    // there the whole time and simply drew fewer games by the luck of the
+    // rotation didn't do anything to deserve fewer chances to score — so
+    // THEIR points get scaled UP to the reference too, marked distinctly
+    // from a scale-down so it's clear which direction the adjustment went.
+    var rowsArr = Object.keys(totals).map(function(k){ return totals[k]; });
+    var activeRows = rowsArr.filter(function(r){ return r.group !== 'out'; });
+    var refPool = activeRows.length ? activeRows : rowsArr;
+    var freq = {};
+    refPool.forEach(function(r){ freq[r.played] = (freq[r.played] || 0) + 1; });
+    var referenceGames = 0, bestCount = -1;
+    Object.keys(freq).forEach(function(k){
+      var n = parseInt(k, 10);
+      if (freq[k] > bestCount || (freq[k] === bestCount && n > referenceGames)){
+        bestCount = freq[k]; referenceGames = n;
+      }
+    });
+
+    var recalculated = false;
+    rowsArr.forEach(function(row){
+      var scale = function(){
+        row.adjPoints = Math.round((row.points / row.played) * referenceGames);
+        row.adjDiff = Math.round(((row.forPts - row.againstPts) / row.played) * referenceGames);
+      };
+      if (row.played <= 0 || row.played === referenceGames || row.group === 'out'){
+        row.adjPoints = row.points;
+        row.adjDiff = row.forPts - row.againstPts;
+        row.recalcDir = 'none';
+      } else if (row.played > referenceGames){
+        scale();
+        row.recalcDir = 'down';
+        recalculated = true;
+      } else if (!state.laterAdditions[row.name]){
+        // Present the whole time, just drew fewer games by luck of the draw.
+        scale();
+        row.recalcDir = 'up';
+        recalculated = true;
+      } else {
+        row.adjPoints = row.points;
+        row.adjDiff = row.forPts - row.againstPts;
+        row.recalcDir = 'none';
+      }
+    });
+
+    return { totals: totals, h2h: h2h, referenceGames: referenceGames, recalculated: recalculated };
+  }
+
+  // Ranked by recalculated points (see computeTotals), then recalculated
+  // point differential, then head-to-head result between the two players.
+  function compareRows(a, b, h2h){
+    if (a.adjPoints !== b.adjPoints) return b.adjPoints - a.adjPoints;
+    if (a.adjDiff !== b.adjDiff) return b.adjDiff - a.adjDiff;
+    if (h2h[a.name] && typeof h2h[a.name][b.name] === 'number' && h2h[a.name][b.name] !== 0){
+      return -h2h[a.name][b.name];
+    }
+    return 0;
+  }
+
+  function rankPlayers(totals, h2h){
+    return Object.keys(totals).map(function(k){ return totals[k]; }).sort(function(a, b){
+      return compareRows(a, b, h2h);
+    });
+  }
+
+  function groupTagFor(group){
+    if (group === 'top') return { text: t('grpTop'), cls: 'top' };
+    if (group === 'bottom') return { text: t('grpBottom'), cls: 'bottom' };
+    if (group === 'out') return { text: t('grpOut'), cls: 'out' };
+    return { text: '', cls: '' };
+  }
+
+  // Builds one leaderboard panel (title + optional toggle + table). Ties are
+  // rendered with standard competition ranking (1, 1, 3, 4 — shared ranks for
+  // fully-tied rows, next distinct rank skips accordingly).
+  function buildBoardPanel(opts){
+    var wrap = document.createElement('div');
+    wrap.className = 'board';
+
+    var head = document.createElement('div');
+    head.className = 'board-head';
+    var h3 = document.createElement('h3');
+    h3.textContent = opts.title;
+    head.appendChild(h3);
+
+    var hidden = !!state.boardHidden[opts.key];
+    var toggleBtn = document.createElement('button');
+    toggleBtn.type = 'button';
+    toggleBtn.className = 'board-toggle-btn';
+    toggleBtn.textContent = hidden ? t('boardShowBtn') : t('boardHideBtn');
+    toggleBtn.addEventListener('click', function(){
+      state.boardHidden[opts.key] = !state.boardHidden[opts.key];
+      renderLeaderboard();
+    });
+    head.appendChild(toggleBtn);
+    wrap.appendChild(head);
+
+    if (hidden) return wrap;
+
+    var sub = document.createElement('div');
+    sub.className = 'board-sub';
+    sub.textContent = t('boardSub');
+    wrap.appendChild(sub);
+
+    var table = document.createElement('table');
+    table.className = 'board-table';
+    var thead = document.createElement('thead');
+    var headHtml = '<tr><th>' + t('thRank') + '</th><th>' + t('thPlayer') + '</th>' +
+      (opts.showGroupTag ? '<th>' + t('thGroup') + '</th>' : '') +
+      '<th style="text-align:right;">' + t('thDiff') + '</th>' +
+      '<th style="text-align:right;">' + t('thPts') + '</th>' +
+      '<th class="marker-col"></th></tr>';
+    thead.innerHTML = headHtml;
+    table.appendChild(thead);
+
+    var tbody = document.createElement('tbody');
+    var rank = 1;
+    opts.rows.forEach(function(row, i){
+      if (i > 0 && compareRows(opts.rows[i - 1], row, opts.h2h) !== 0) rank = i + 1;
+      var tr = document.createElement('tr');
+      var classes = [];
+      if (rank <= 3 && row.group !== 'out') classes.push('top3');
+      if (i === opts.cutoffIdx) classes.push('cutoff-row');
+      if (classes.length) tr.className = classes.join(' ');
+
+      var nameHtml = row.name;
+      if (!opts.showGroupTag && row.group === 'out'){
+        nameHtml += '<span class="out-tag">' + t('grpOut') + '</span>';
+      }
+      var diffText = (row.adjDiff > 0 ? '+' : '') + row.adjDiff;
+      var starHtml = '';
+      if (row.recalcDir === 'down'){
+        starHtml = '<span class="recalc-star recalc-down" title="' + tf('recalcTooltipDown', { raw: row.points, played: row.played }) + '">*</span>';
+      } else if (row.recalcDir === 'up'){
+        starHtml = '<span class="recalc-star recalc-up" title="' + tf('recalcTooltipUp', { raw: row.points, played: row.played }) + '">\u25B2</span>';
+      }
+
+      var cells = '<td class="rank">' + rank + '</td><td>' + nameHtml + '</td>';
+      if (opts.showGroupTag){
+        var tag = groupTagFor(row.group);
+        cells += '<td class="grp-tag ' + tag.cls + '">' + tag.text + '</td>';
+      }
+      cells += '<td class="diff">' + diffText + '</td>';
+      cells += '<td class="pts">' + row.adjPoints + '</td>';
+      cells += '<td class="marker-col">' + starHtml + '</td>';
+      tr.innerHTML = cells;
+      tbody.appendChild(tr);
+    });
+    table.appendChild(tbody);
+    wrap.appendChild(table);
+
+    if (opts.recalculated){
+      var note = document.createElement('div');
+      note.className = 'board-note';
+      note.textContent = tf('recalcNote', { ref: opts.referenceGames });
+      wrap.appendChild(note);
+    }
+
+    return wrap;
+  }
+
+  function renderLeaderboard(){
+    var boardCol = document.getElementById('boardCol');
+    boardCol.innerHTML = '';
+    var panels = [];
+
+    if (state.format === 'splitToss'){
+      LEVELS.map(function(lv){ return { id: lv.id, label: t(lv.labelKey) }; }).forEach(function(g){
+        var pool = state.pools.filter(function(p){ return p.id === g.id; })[0];
+        if (!pool || !pool.resultsEnabled) return;
+        var result = computeTotals(g.id);
+        var rows = rankPlayers(result.totals, result.h2h);
+        panels.push({ key: g.id, title: g.label + ' \u2013 ' + t('boardTitle'), rows: rows, h2h: result.h2h, showGroupTag: false, cutoffIdx: -1, recalculated: result.recalculated, referenceGames: result.referenceGames });
+      });
+    } else {
+      var anyResults = state.pools.some(function(p){ return p.resultsEnabled; });
+      if (anyResults){
+        var result = computeTotals();
+        var rows = rankPlayers(result.totals, result.h2h);
+        var cutoffIdx = -1;
+        if (state.splitDone) cutoffIdx = rows.findIndex(function(r){ return r.group === 'bottom'; });
+        panels.push({ key: 'main', title: t('boardTitle'), rows: rows, h2h: result.h2h, showGroupTag: true, cutoffIdx: cutoffIdx, recalculated: result.recalculated, referenceGames: result.referenceGames });
+      }
+    }
+
+    boardCol.style.display = panels.length ? '' : 'none';
+    panels.forEach(function(p){ boardCol.appendChild(buildBoardPanel(p)); });
+
+    if (playcountVisible) renderPlayCounts();
+  }
+
+  function doSplit(){
+    var main = state.pools[0];
+    var allFilled = true;
+    main.rounds.forEach(function(rd){
+      rd.courts.forEach(function(c){
+        var key = scoreKey('main', c.courtIndex, rd.round);
+        var sc = state.scores[key];
+        if (!sc || typeof sc.t1 !== 'number' || typeof sc.t2 !== 'number') allFilled = false;
+      });
+    });
+    if (!allFilled) return false;
+
+    var result = computeTotals();
+    var ranked = rankPlayers(result.totals, result.h2h).filter(function(r){
+      return state.activeRoster.indexOf(r.name) !== -1;
+    });
+
+    var topCount = Math.ceil(ranked.length / 2);
+    var topNames = ranked.slice(0, topCount).map(function(r){ return r.name; });
+    var bottomNames = ranked.slice(topCount).map(function(r){ return r.name; });
+
+    var remainingRounds = state.totalRoundsPlanned - state.splitRoundStored;
+    var topPool = shuffle(topNames);
+    var bottomPool = shuffle(bottomNames);
+
+    var courtAlloc = allocateCourtsPerRound(state.courts, [topPool.length, bottomPool.length], remainingRounds);
+    var topCourtsCount = courtAlloc[0];
+    var bottomCourtsCount = courtAlloc[1];
+
+    // Seed with phase-1 history so fairness (who's played more/less, who's
+    // already partnered/opposed whom) carries across the split instead of
+    // starting over — otherwise someone who happened to rest less in BOTH
+    // phases ends up with a compounded, unfair play-count advantage.
+    var topSeed = computeHistorySeed(main.rounds, topPool);
+    var bottomSeed = computeHistorySeed(main.rounds, bottomPool);
+
+    var topRounds = generateGlobalSchedule(topPool, remainingRounds, state.splitRoundStored, topCourtsCount, topSeed);
+    var bottomRounds = generateGlobalSchedule(bottomPool, remainingRounds, state.splitRoundStored, bottomCourtsCount, bottomSeed);
+    // Top group's court count can vary per round, so offset per round.
+    bottomRounds.forEach(function(rd, i){
+      var offset = topCourtsCount[i] <= 0 ? 0 : usableCourts(topPool.length, topCourtsCount[i]);
+      rd.courts.forEach(function(c){ c.courtIndex += offset; });
+    });
+
+    state.pools.push({ id: 'top', label: 'Top', players: topNames, courts: topCourtsCount, resultsEnabled: true, startRound: state.splitRoundStored + 1, endRound: state.totalRoundsPlanned, rounds: topRounds });
+    state.pools.push({ id: 'bottom', label: 'Bottom', players: bottomNames, courts: bottomCourtsCount, resultsEnabled: true, startRound: state.splitRoundStored + 1, endRound: state.totalRoundsPlanned, rounds: bottomRounds });
+    state.splitDone = true;
+
+    renderSchedule();
+    renderLeaderboard();
+    return true;
+  }
+
+  // ================= Edit roster =================
+  var panelEdit = document.getElementById('panelEdit');
+  var editSingleBlock = document.getElementById('editSingleBlock');
+  var editSplitBlockWrap = document.getElementById('editSplitBlockWrap');
+  var editRosterList = document.getElementById('editRosterList');
+  var editRosterLists = LEVELS.map(function(lv){ return document.getElementById('editRosterList' + lv.cap); });
+  var editStatus = document.getElementById('editStatus');
+  var editError = document.getElementById('editError');
+  var editAddBtn = document.getElementById('editAddBtn');
+  var editAddDisabledNote = document.getElementById('editAddDisabledNote');
+
+  function getPoolNameKey(poolId){
+    if (poolId === 'top') return 'editPoolTop';
+    if (poolId === 'bottom') return 'editPoolBottom';
+    var li = levelIndexById(poolId);
+    if (li >= 0) return LEVELS[li].editKey;
+    return 'editPoolMain';
+  }
+
+  var editRoundsPlayedOverride = {}; // poolId -> number of rounds the user says are already played
+
+  function poolTotalRounds(pool){
+    return pool.endRound - pool.startRound + 1;
+  }
+
+  function renderEditStatus(){
+    editStatus.innerHTML = '';
+    state.pools.forEach(function(pool){
+      var block = document.createElement('div');
+      block.className = 'es-pool';
+
+      if (pool.label){
+        var lab = document.createElement('div');
+        lab.className = 'es-pool-label';
+        lab.textContent = poolDisplayLabel(pool);
+        block.appendChild(lab);
+      }
+
+      // The 'main' pool after a halftime split is permanently historical —
+      // nothing left there is ever reshuffled, so no control to show.
+      if (pool.id === 'main' && state.splitDone){
+        var frozenLine = document.createElement('div');
+        frozenLine.className = 'es-line';
+        frozenLine.innerHTML = '<b>' + tf('editFrozen', { range: roundRangeText(pool.startRound, pool.endRound) }) + '</b>';
+        block.appendChild(frozenLine);
+        editStatus.appendChild(block);
+        return;
+      }
+
+      var total = poolTotalRounds(pool);
+      var autoDetected = Math.max(0, Math.min(total, findCutRound(pool) - pool.startRound));
+      if (editRoundsPlayedOverride[pool.id] === undefined){
+        editRoundsPlayedOverride[pool.id] = autoDetected;
+      }
+
+      var ctrl = document.createElement('div');
+      ctrl.className = 'es-rounds-control';
+      ctrl.innerHTML =
+        '<label>' + t('editRoundsPlayedLabel') + '</label>' +
+        '<div class="stepper">' +
+          '<button type="button" class="es-rounds-minus">−</button>' +
+          '<input type="number" class="es-rounds-input" min="0" max="' + total + '" value="' + editRoundsPlayedOverride[pool.id] + '">' +
+          '<button type="button" class="es-rounds-plus">+</button>' +
+        '</div>' +
+        '<span class="es-rounds-hint">' + tf('editRoundsPlayedOf', { n: total }) + '</span>';
+      block.appendChild(ctrl);
+
+      var derived = document.createElement('div');
+      derived.className = 'es-line';
+      block.appendChild(derived);
+
+      function updateDerivedText(){
+        var val = editRoundsPlayedOverride[pool.id];
+        var frozenEnd = pool.startRound + val - 1;
+        var cutRound = pool.startRound + val;
+        var html = '';
+        if (frozenEnd >= pool.startRound){
+          html += '<b>' + tf('editFrozen', { range: roundRangeText(pool.startRound, frozenEnd) }) + '</b>';
+        }
+        if (cutRound <= pool.endRound){
+          var regenText = tf('editRegen', { range: roundRangeText(cutRound, pool.endRound) });
+          if (frozenEnd < pool.startRound){
+            regenText = regenText.charAt(0).toUpperCase() + regenText.slice(1);
+          }
+          html += (frozenEnd >= pool.startRound ? ', ' : '') + regenText;
+        } else {
+          html += (frozenEnd >= pool.startRound ? ' \u2014 ' : '') + t('editAllPlayed');
+        }
+        derived.innerHTML = html;
+      }
+      updateDerivedText();
+
+      var input = ctrl.querySelector('.es-rounds-input');
+      var minus = ctrl.querySelector('.es-rounds-minus');
+      var plus = ctrl.querySelector('.es-rounds-plus');
+      function setVal(v){
+        if (isNaN(v)) v = 0;
+        v = Math.max(0, Math.min(total, v));
+        editRoundsPlayedOverride[pool.id] = v;
+        input.value = v;
+        updateDerivedText();
+      }
+      input.addEventListener('input', function(){ setVal(parseInt(input.value, 10)); });
+      minus.addEventListener('click', function(){ setVal(editRoundsPlayedOverride[pool.id] - 1); });
+      plus.addEventListener('click', function(){ setVal(editRoundsPlayedOverride[pool.id] + 1); });
+
+      editStatus.appendChild(block);
+    });
+  }
+
+  function checkEditDuplicates(){
+    var isSplit = state.format === 'splitToss';
+    var container = isSplit ? editSplitBlockWrap : editSingleBlock;
+    var inputs = Array.from(container.querySelectorAll('.edit-row input'));
+    var hasDup = markDuplicatesAmong(inputs);
+    if (hasDup){
+      editError.textContent = t('editErrDuplicate');
+      editError.classList.add('visible');
+    } else {
+      editError.classList.remove('visible');
+    }
+    return hasDup;
+  }
+
+  function renderEditRoster(){
+    editRosterList.innerHTML = '';
+    editError.classList.remove('visible');
+    state.activeRoster.forEach(function(name){
+      editRosterList.appendChild(buildEditRow(name));
+    });
+    var disallowAdd = state.splitDone;
+    editAddBtn.style.display = disallowAdd ? 'none' : '';
+    editAddDisabledNote.style.display = disallowAdd ? 'block' : 'none';
+    checkEditDuplicates();
+  }
+
+  function renderEditRosterSplit(){
+    LEVELS.forEach(function(lv, li){
+      var listEl = editRosterLists[li];
+      listEl.innerHTML = '';
+      var group = document.getElementById('editGroup' + lv.cap);
+      var inUse = (state.activeRosterLevels[li] || []).length > 0 || state.levelCounts[li] > 0;
+      group.style.display = inUse ? '' : 'none';
+      (state.activeRosterLevels[li] || []).forEach(function(name){
+        listEl.appendChild(buildEditRow(name));
+      });
+    });
+    checkEditDuplicates();
+  }
+
+  function buildEditRow(originalName){
+    var row = document.createElement('div');
+    row.className = 'edit-row' + (originalName ? '' : ' is-new');
+    if (originalName) row.setAttribute('data-original', originalName);
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = originalName || '';
+    input.placeholder = originalName ? '' : t('editNewPlaceholder');
+    input.addEventListener('input', function(){ checkEditDuplicates(); });
+    row.appendChild(input);
+    var removeBtn = document.createElement('button');
+    removeBtn.type = 'button';
+    removeBtn.className = 'remove-btn';
+    removeBtn.textContent = '\u2715';
+    removeBtn.setAttribute('aria-label', t('editRemoveAria'));
+    removeBtn.addEventListener('click', function(){ row.remove(); checkEditDuplicates(); });
+    row.appendChild(removeBtn);
+    return row;
+  }
+
+  editAddBtn.addEventListener('click', function(){
+    editRosterList.appendChild(buildEditRow(null));
+    checkEditDuplicates();
+  });
+  LEVELS.forEach(function(lv, li){
+    document.getElementById('editAdd' + lv.cap + 'Btn').addEventListener('click', function(){
+      editRosterLists[li].appendChild(buildEditRow(null));
+      checkEditDuplicates();
+    });
+  });
+
+  document.getElementById('editPlayersBtn').addEventListener('click', function(){
+    var isSplit = state.format === 'splitToss';
+    editSingleBlock.style.display = isSplit ? 'none' : '';
+    editSplitBlockWrap.style.display = isSplit ? '' : 'none';
+    editRoundsPlayedOverride = {};
+    renderEditStatus();
+    if (isSplit) renderEditRosterSplit(); else renderEditRoster();
+    document.getElementById('panel3').classList.remove('visible');
+    panelEdit.classList.add('visible');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  });
+
+  document.getElementById('editCancelBtn').addEventListener('click', function(){
+    panelEdit.classList.remove('visible');
+    document.getElementById('panel3').classList.add('visible');
+  });
+
+  // Reads a roster-list element's rows into {originalName, value} objects
+  function readEditRows(listEl){
+    return Array.from(listEl.querySelectorAll('.edit-row')).map(function(rowEl){
+      var input = rowEl.querySelector('input');
+      return { originalName: rowEl.getAttribute('data-original') || null, value: input.value };
+    });
+  }
+
+  // Turns raw form rows into a final name list, a rename map, and added-name list.
+  // Returns null (after setting editError) if validation fails.
+  function resolveEditRows(rows, oldRosterLength, poolLabelForError, placeholderKey){
+    placeholderKey = placeholderKey || 'namePlaceholder';
+    var renameMap = {};
+    var newRoster = [];
+    var addedNames = [];
+    var seenFinal = {};
+    var newPlayerCounter = 0;
+
+    for (var i = 0; i < rows.length; i++){
+      var row = rows[i];
+      var val = row.value.trim();
+      var finalName;
+      if (row.originalName){
+        finalName = val || row.originalName;
+        if (finalName !== row.originalName) renameMap[row.originalName] = finalName;
+      } else {
+        newPlayerCounter++;
+        finalName = val || tf(placeholderKey, { n: oldRosterLength + newPlayerCounter });
+        addedNames.push(finalName);
+      }
+      newRoster.push(finalName);
+      var lc = finalName.toLowerCase();
+      seenFinal[lc] = (seenFinal[lc] || 0) + 1;
+    }
+
+    var dupeKey = Object.keys(seenFinal).find(function(k){ return seenFinal[k] > 1; });
+    if (dupeKey){
+      editError.textContent = t('editErrDuplicate');
+      editError.classList.add('visible');
+      return null;
+    }
+    if (newRoster.length < 4){
+      editError.textContent = poolLabelForError ? tf('editErrMinPool', { pool: poolLabelForError }) : t('editErrMin');
+      editError.classList.add('visible');
+      return null;
+    }
+    return { renameMap: renameMap, newRoster: newRoster, addedNames: addedNames };
+  }
+
+  function applyRenamesGlobally(renameMap){
+    if (!Object.keys(renameMap).length) return;
+    state.pools.forEach(function(pool){
+      pool.players = pool.players.map(function(n){ return renameMap[n] || n; });
+      pool.rounds.forEach(function(rd){
+        rd.resting = rd.resting.map(function(n){ return renameMap[n] || n; });
+        rd.courts.forEach(function(c){
+          c.team1 = c.team1.map(function(n){ return renameMap[n] || n; });
+          c.team2 = c.team2.map(function(n){ return renameMap[n] || n; });
+        });
+      });
+    });
+    Object.keys(renameMap).forEach(function(oldName){
+      if (state.laterAdditions[oldName]){
+        delete state.laterAdditions[oldName];
+        state.laterAdditions[renameMap[oldName]] = true;
+      }
+    });
+  }
+
+  // Regenerates a single pool's not-yet-played rounds given its removed/added names.
+  // Returns true on success, false (with editError set) on a per-pool validation failure.
+  function regeneratePoolIfNeeded(pool, oldPoolRoster, removedNames, addedNames){
+    var relevantRemovals = removedNames.filter(function(n){ return pool.players.indexOf(n) >= 0; });
+    if (!relevantRemovals.length && !addedNames.length) return true;
+
+    var manualPlayed = editRoundsPlayedOverride[pool.id];
+    var cutRound = (typeof manualPlayed === 'number') ? (pool.startRound + manualPlayed) : findCutRound(pool);
+    if (cutRound > pool.endRound){
+      // Nothing left to reshuffle, but still record any added names so
+      // they're not silently missing from the roster/leaderboard — they'll
+      // just show 0 games played since there's no round left to give them.
+      addedNames.forEach(function(name){
+        if (pool.players.indexOf(name) === -1) pool.players.push(name);
+        state.laterAdditions[name] = true;
+      });
+      return true;
+    }
+
+    var currentPoolRoster = oldPoolRoster.filter(function(n){ return pool.players.indexOf(n) >= 0; });
+    var continuing = currentPoolRoster.filter(function(n){ return relevantRemovals.indexOf(n) === -1; });
+    var newRosterForPool = continuing.concat(addedNames);
+
+    if (newRosterForPool.length < 4){
+      editError.textContent = tf('editErrMinPool', { pool: t(getPoolNameKey(pool.id)) });
+      editError.classList.add('visible');
+      return false;
+    }
+
+    var frozenRounds = pool.rounds.slice(0, cutRound - pool.startRound);
+    var plannedRemainingRounds = pool.endRound - cutRound + 1;
+    var seed = computeHistorySeed(frozenRounds, continuing);
+
+    // Already-played rounds are frozen fact, so a player added partway through
+    // can only catch up within whatever rounds remain. If there aren't enough
+    // left, extend this pool's schedule with a few extra rounds so everyone
+    // still ends up within 1 game of each other, rather than leaving latecomers
+    // (or, after a removal-heavy edit, veterans) stuck far behind/ahead.
+    var framePlay = {};
+    newRosterForPool.forEach(function(name){
+      framePlay[name] = (seed.played[name] !== undefined) ? seed.played[name] : 0;
+    });
+    var maxFrozenPlay = 0;
+    Object.keys(framePlay).forEach(function(name){ maxFrozenPlay = Math.max(maxFrozenPlay, framePlay[name]); });
+    var generousRounds = Math.max(plannedRemainingRounds, maxFrozenPlay + newRosterForPool.length + 4);
+
+    for (var r = cutRound; r <= pool.endRound; r++){
+      for (var c = 1; c <= 4; c++){
+        delete state.scores[scoreKey(pool.id, c, r)];
+      }
+    }
+
+    // pool.courts is a per-round array for split-toss pools; take the slice that
+    // lines up with the rounds actually being regenerated so the rotation is kept.
+    var courtsForRegen = Array.isArray(pool.courts)
+      ? pool.courts.slice(cutRound - pool.startRound)
+      : pool.courts;
+    var generated = generateGlobalSchedule(shuffle(newRosterForPool), generousRounds, cutRound - 1, courtsForRegen, seed);
+
+    var running = {};
+    newRosterForPool.forEach(function(name){ running[name] = framePlay[name]; });
+    var finalCount = plannedRemainingRounds;
+    for (var i = 0; i < generated.length; i++){
+      generated[i].courts.forEach(function(court){
+        court.team1.concat(court.team2).forEach(function(name){ running[name]++; });
+      });
+      finalCount = i + 1;
+      if (finalCount >= plannedRemainingRounds){
+        var vals = Object.keys(running).map(function(k){ return running[k]; });
+        var spread = Math.max.apply(null, vals) - Math.min.apply(null, vals);
+        if (spread <= 1) break;
+      }
+    }
+
+    var newRounds = generated.slice(0, finalCount);
+    pool.rounds = frozenRounds.concat(newRounds);
+    pool.endRound = (cutRound - 1) + finalCount;
+    state.totalRoundsPlanned = Math.max(state.totalRoundsPlanned, pool.endRound);
+    addedNames.forEach(function(name){
+      if (pool.players.indexOf(name) === -1) pool.players.push(name);
+      state.laterAdditions[name] = true;
+    });
+    return true;
+  }
+
+  // ---- Single-group (Toss / Americano) apply ----
+  function applySingleRosterEdits(){
+    var rows = readEditRows(editRosterList);
+    var oldRoster = state.activeRoster.slice();
+    var resolved = resolveEditRows(rows, oldRoster.length, null);
+    if (!resolved) return false;
+
+    var seenOriginals = {};
+    rows.forEach(function(r){ if (r.originalName) seenOriginals[r.originalName] = true; });
+    var removedNames = oldRoster.filter(function(n){ return !seenOriginals[n]; });
+
+    applyRenamesGlobally(resolved.renameMap);
+
+    for (var pIdx = 0; pIdx < state.pools.length; pIdx++){
+      var pool = state.pools[pIdx];
+      if (pool.id === 'main' && state.splitDone) continue; // fully historical, never touched again
+      var addsForThisPool = (pool.id === 'main' && !state.splitDone) ? resolved.addedNames : [];
+      var ok = regeneratePoolIfNeeded(pool, oldRoster, removedNames, addsForThisPool);
+      if (!ok) return false;
+    }
+
+    state.activeRoster = resolved.newRoster;
+    return true;
+  }
+
+  // ---- Split Toss (Beginner + Gevorderd) apply ----
+  function applySplitRosterEdits(){
+    // Only levels that are actually in play take part in the edit.
+    var groups = [];
+    LEVELS.forEach(function(lv, li){
+      if (!(state.activeRosterLevels[li] || []).length) return;
+      groups.push({
+        poolId: lv.id,
+        levelIdx: li,
+        listEl: editRosterLists[li],
+        oldRoster: state.activeRosterLevels[li].slice(),
+        placeholderKey: lv.placeholderKey
+      });
+    });
+
+    var allRenameMap = {};
+    var resolvedByGroup = [];
+
+    for (var gi = 0; gi < groups.length; gi++){
+      var g = groups[gi];
+      var rows = readEditRows(g.listEl);
+      var resolved = resolveEditRows(rows, g.oldRoster.length, t(getPoolNameKey(g.poolId)), g.placeholderKey);
+      if (!resolved) return false;
+
+      var seenOriginals = {};
+      rows.forEach(function(r){ if (r.originalName) seenOriginals[r.originalName] = true; });
+      var removedNames = g.oldRoster.filter(function(n){ return !seenOriginals[n]; });
+
+      Object.keys(resolved.renameMap).forEach(function(k){ allRenameMap[k] = resolved.renameMap[k]; });
+      resolvedByGroup.push({ poolId: g.poolId, levelIdx: g.levelIdx, oldRoster: g.oldRoster, newRoster: resolved.newRoster, addedNames: resolved.addedNames, removedNames: removedNames });
+    }
+
+    // Defense in depth: even though live UI checks already scan both groups
+    // together, guard here too against a cross-group identity collision
+    // (names are the system's only player identity, so this must never happen).
+    var crossCounts = {};
+    resolvedByGroup.forEach(function(gr){
+      gr.newRoster.forEach(function(n){
+        var lc = n.toLowerCase();
+        crossCounts[lc] = (crossCounts[lc] || 0) + 1;
+      });
+    });
+    if (Object.keys(crossCounts).some(function(k){ return crossCounts[k] > 1; })){
+      editError.textContent = t('editErrDuplicate');
+      editError.classList.add('visible');
+      return false;
+    }
+
+    applyRenamesGlobally(allRenameMap);
+
+    for (var gi2 = 0; gi2 < resolvedByGroup.length; gi2++){
+      var gr = resolvedByGroup[gi2];
+      var pool = state.pools.filter(function(p){ return p.id === gr.poolId; })[0];
+      if (!pool) continue;
+      var ok = regeneratePoolIfNeeded(pool, gr.oldRoster, gr.removedNames, gr.addedNames);
+      if (!ok) return false;
+      state.activeRosterLevels[gr.levelIdx] = gr.newRoster;
+    }
+
+    return true;
+  }
+
+  document.getElementById('editApplyBtn').addEventListener('click', function(){
+    if (checkEditDuplicates()) return;
+    var ok = state.format === 'splitToss' ? applySplitRosterEdits() : applySingleRosterEdits();
+    if (!ok) return;
+
+    renderMeta();
+    renderSchedule();
+    renderLeaderboard();
+    panelEdit.classList.remove('visible');
+    document.getElementById('panel3').classList.add('visible');
+  });
+
+  var confirmOverlay = document.getElementById('confirmOverlay');
+  var confirmModalText = document.getElementById('confirmModalText');
+  var confirmYesBtn = document.getElementById('confirmYesBtn');
+  var pendingConfirmAction = null;
+
+  function showConfirmModal(message, confirmLabel, onConfirm){
+    confirmModalText.textContent = message;
+    confirmYesBtn.textContent = confirmLabel;
+    pendingConfirmAction = onConfirm;
+    confirmOverlay.classList.add('visible');
+  }
+
+  document.getElementById('confirmCancelBtn').addEventListener('click', function(){
+    confirmOverlay.classList.remove('visible');
+    pendingConfirmAction = null;
+  });
+  confirmYesBtn.addEventListener('click', function(){
+    confirmOverlay.classList.remove('visible');
+    var action = pendingConfirmAction;
+    pendingConfirmAction = null;
+    if (action) action();
+  });
+
+  // ---------- Saving and loading a schedule ----------
+  // A schedule is nested data (levels, rounds, courts, teams, scores), so
+  // it is saved as JSON rather than CSV: CSV would have to flatten the nesting
+  // and could not be read back reliably. The file is a plain text file the
+  // organiser keeps themselves -- nothing is stored in the browser.
+  var SAVE_FORMAT = 'padel-scheduler';
+  var SAVE_VERSION = 1;
+
+  function buildSaveData(){
+    return {
+      format: SAVE_FORMAT,
+      version: SAVE_VERSION,
+      savedAt: new Date().toISOString(),
+      state: JSON.parse(JSON.stringify(state))
+    };
+  }
+
+  function saveSchedule(){
+    var data = buildSaveData();
+    var text = JSON.stringify(data, null, 2);
+    var stamp = new Date();
+    var pad = function(n){ return (n < 10 ? '0' : '') + n; };
+    var name = 'padel-' + stamp.getFullYear() + pad(stamp.getMonth() + 1) + pad(stamp.getDate()) +
+               '-' + pad(stamp.getHours()) + pad(stamp.getMinutes()) + '.json';
+    try {
+      var blob = new Blob([text], { type: 'application/json' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 0);
+      return true;
+    } catch (e){
+      return false;
+    }
+  }
+
+  // Only accept files this app wrote, and sanity-check the parts we rely on --
+  // a half-valid file restored into the UI would fail in confusing ways later.
+  function validateSaveData(data){
+    if (!data || typeof data !== 'object') return 'loadErrNotJson';
+    if (data.format !== SAVE_FORMAT) return 'loadErrWrongFile';
+    if (typeof data.version !== 'number' || data.version > SAVE_VERSION) return 'loadErrVersion';
+    var st = data.state;
+    if (!st || typeof st !== 'object') return 'loadErrCorrupt';
+    if (['toss', 'splitToss', 'americano'].indexOf(st.format) === -1) return 'loadErrCorrupt';
+    if (!Array.isArray(st.pools)) return 'loadErrCorrupt';
+    if (!Array.isArray(st.levelCounts) || st.levelCounts.length !== LEVELS.length) return 'loadErrCorrupt';
+    for (var i = 0; i < st.pools.length; i++){
+      var pool = st.pools[i];
+      if (!pool || !Array.isArray(pool.players) || !Array.isArray(pool.rounds)) return 'loadErrCorrupt';
+    }
+    return null;
+  }
+
+  function applyLoadedState(st){
+    state = st;
+    // Fill in anything an older save might not carry, so the UI never reads undefined.
+    if (!state.boardHidden) state.boardHidden = { main: false, beginner: false, ervaren: false, gevorderd: false };
+    if (!state.laterAdditions) state.laterAdditions = {};
+    if (!Array.isArray(state.levelResults)) state.levelResults = [false, false, false];
+    if (!Array.isArray(state.levelNames)) state.levelNames = [[], [], []];
+    if (!Array.isArray(state.activeRosterLevels)) state.activeRosterLevels = [[], [], []];
+    if (!Array.isArray(state.activeRoster)) state.activeRoster = [];
+    if (!state.scores) state.scores = {};
+
+    // Put every control back in step with the restored state.
+    document.querySelectorAll('.format-btn').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-format') === state.format);
+    });
+    var isSplit = state.format === 'splitToss';
+    singlePlayersBlock.style.display = isSplit ? 'none' : '';
+    splitPlayersBlock.style.display = isSplit ? '' : 'none';
+    if (state.playerCount) playerCountInput.value = state.playerCount;
+    levelCountInputs.forEach(function(inp, i){ inp.value = state.levelCounts[i]; });
+    levelResultsToggles.forEach(function(tg, i){ tg.checked = !!state.levelResults[i]; });
+    roundsInput.value = state.rounds;
+    regroupToggle.checked = !!state.regroupEnabled;
+    regroupField.classList.toggle('collapsed', state.format === 'splitToss');
+    splitRoundInput.value = state.splitRound || 4;
+    splitRoundField.classList.toggle('collapsed', !state.regroupEnabled);
+    syncCourtSelection();
+    renderAppTitle();
+    renderCourtsPreview();
+
+    playcountVisible = false;
+    playcountPanel.style.display = 'none';
+    playcountToggleBtn.textContent = t('playcountToggleShow');
+    document.getElementById('playcountTables').innerHTML = '';
+
+    if (state.pools.length){
+      renderMeta();
+      renderSchedule();
+      renderLeaderboard();
+      goToStep(3);
+    } else {
+      document.getElementById('metaStrip').style.display = 'none';
+      document.getElementById('roundsCol').innerHTML = '';
+      document.getElementById('boardCol').innerHTML = '';
+      goToStep(1);
+    }
+  }
+
+  function loadScheduleFromText(text){
+    var loadError = document.getElementById('loadError');
+    var data;
+    try { data = JSON.parse(text); }
+    catch (e){
+      loadError.textContent = t('loadErrNotJson');
+      loadError.classList.add('visible');
+      return false;
+    }
+    var problem = validateSaveData(data);
+    if (problem){
+      loadError.textContent = t(problem);
+      loadError.classList.add('visible');
+      return false;
+    }
+    loadError.classList.remove('visible');
+    applyLoadedState(data.state);
+    return true;
+  }
+
+  document.getElementById('saveBtn').addEventListener('click', function(){
+    saveSchedule();
+  });
+
+  var loadFileInput = document.getElementById('loadFileInput');
+  document.getElementById('loadBtn').addEventListener('click', function(){
+    document.getElementById('loadError').classList.remove('visible');
+    loadFileInput.value = '';
+    loadFileInput.click();
+  });
+  loadFileInput.addEventListener('change', function(){
+    var file = loadFileInput.files && loadFileInput.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){ loadScheduleFromText(String(reader.result)); };
+    reader.onerror = function(){
+      var le = document.getElementById('loadError');
+      le.textContent = t('loadErrRead');
+      le.classList.add('visible');
+    };
+    reader.readAsText(file);
+  });
+
+  function doStartOver(){
+    var keepLang = state.lang;
+    state = {
+      step: 1, lang: keepLang, format: 'toss',
+      playerCount: null, levelCounts: [8, 8, 0],
+      courts: 2, rounds: 7,
+      resultsEnabled: false, levelResults: [false, false, false],
+      regroupEnabled: false, splitRound: 4,
+      names: [], levelNames: [[], [], []],
+      activeRoster: [], activeRosterLevels: [[], [], []],
+      pools: [], scores: {}, splitDone: false,
+      boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
+      laterAdditions: {}
+    };
+    playcountSort = {};
+    roundsInput.value = 7;
+    regroupField.classList.add('collapsed');
+    regroupToggle.checked = false;
+    splitRoundField.classList.add('collapsed');
+    splitRoundInput.value = 4;
+    playerCountInput.value = 16;
+    levelCountInputs.forEach(function(inp, i){ inp.value = state.levelCounts[i]; });
+    levelResultsToggles.forEach(function(tg){ tg.checked = false; });
+    singlePlayersBlock.style.display = '';
+    splitPlayersBlock.style.display = 'none';
+    document.querySelectorAll('.format-btn').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-format') === state.format);
+    });
+    syncCourtSelection();
+    renderAppTitle();
+    renderCourtsPreview();
+
+    // Clear the previous schedule out of the DOM as well as out of state.
+    // Step 3 is hidden after a restart so nothing stale is visible, but leaving
+    // the old rounds, leaderboards and play-count panel lying around means a
+    // half-finished restart could still surface them.
+    document.getElementById('roundsCol').innerHTML = '';
+    document.getElementById('boardCol').innerHTML = '';
+    document.getElementById('playcountTables').innerHTML = '';
+    playcountVisible = false;
+    playcountPanel.style.display = 'none';
+    playcountToggleBtn.textContent = t('playcountToggleShow');
+
+    document.getElementById('metaStrip').style.display = 'none';
+    goToStep(1);
+  }
+
+  document.getElementById('startOverBtn').addEventListener('click', function(){
+    showConfirmModal(t('modalStartOverText'), t('confirmStartOverBtn'), doStartOver);
+  });
+
+  document.getElementById('backToSettingsBtn').addEventListener('click', function(){
+    // Just viewing/adjusting settings isn't destructive by itself — the warning
+    // only fires if they actually regenerate (see runGenerate/generateBtn above).
+    goToStep(2);
+  });
+
+  document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
+
+  // init
+  goToStep(1);
+
+  } catch (err) {
+    try {
+      var banner = document.createElement('div');
+      banner.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#E2574C;color:#fff;padding:14px 18px;font-family:sans-serif;font-size:13.5px;z-index:9999;';
+      banner.textContent = 'Er ging iets mis bij het laden (' + (err && err.message ? err.message : 'onbekende fout') + '). Ververs de pagina, of meld dit met een screenshot.';
+      document.body.appendChild(banner);
+      document.getElementById('panel1').classList.add('visible');
+    } catch(e2){}
+  }
+})();
+</script>
+</body>
+</html>
