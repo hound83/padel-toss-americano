@@ -48,14 +48,15 @@ test('two courts: organiser starts on court 1 when that court has space', () => 
   }
 });
 
-test('organiser starts on the penultimate court and invited pair on the lowest capable court', () => {
+test('organiser stays on the penultimate court; guests use the bottom two from four courts', () => {
   for (const courts of [3, 4, 5, 8]) {
     const attendees = Array.from({length: courts * 4}, (_, i) => i);
     for (let attempt = 0; attempt < 20; attempt++) {
       const assignment = checkAssignment(courts, attendees);
       assert.equal(assignment[0], courts - 1);
-      assert.equal(assignment[courts * 4 - 2], 1);
-      assert.equal(assignment[courts * 4 - 1], 1);
+      const allowed = courts >= 4 ? [1, 2] : [1];
+      assert.ok(allowed.includes(assignment[courts * 4 - 2]));
+      assert.ok(allowed.includes(assignment[courts * 4 - 1]));
     }
   }
 });
@@ -68,8 +69,9 @@ test('two absences leave vacancies only on the lowest court', () => {
       const assignment = checkAssignment(courts, attendees);
       assert.equal(assignment[0], courts === 2 ? 1 : courts - 1);
       if (courts > 2) {
-        assert.equal(assignment[courts * 4 - 2], 1);
-        assert.equal(assignment[courts * 4 - 1], 1);
+        const allowed = courts >= 4 ? [1, 2] : [1];
+        assert.ok(allowed.includes(assignment[courts * 4 - 2]));
+        assert.ok(allowed.includes(assignment[courts * 4 - 1]));
       }
     }
   }
@@ -91,5 +93,37 @@ test('absence patterns do not create duplicates, gaps or overfilled courts', () 
       const attendees = shuffle(all).slice(0, 4 + Math.floor(Math.random() * (all.length - 3)));
       checkAssignment(courts, attendees);
     }
+  }
+});
+
+test('100,000 draws: invited players have even odds across the two lowest courts', () => {
+  const courts = 4;
+  const attendees = Array.from({length: 16}, (_, i) => i);
+  const outcomes = {'1,1':0, '1,2':0, '2,1':0, '2,2':0};
+  const distribution = Array.from({length: 16}, () => [0,0,0,0,0]);
+  const draws = 100000;
+  for (let i = 0; i < draws; i++) {
+    const assignment = makeAssignment(attendees, {courts});
+    const key = assignment[14] + ',' + assignment[15];
+    assert.ok(Object.hasOwn(outcomes, key), 'both guests stay on court 1 or 2');
+    outcomes[key]++;
+    for (const player of attendees) distribution[player][assignment[player]]++;
+  }
+  for (const key of Object.keys(outcomes)) {
+    const share = outcomes[key] / draws;
+    assert.ok(Math.abs(share - .25) < .015, key + ' outcome is close to 25%');
+  }
+  assert.equal(distribution[0][3], draws, 'organiser always on court 3');
+  assert.equal(distribution[14][3] + distribution[14][4], 0);
+  assert.equal(distribution[15][3] + distribution[15][4], 0);
+
+  const percent = n => (100 * n / draws).toFixed(2) + '%';
+  console.log('KOC 4 courts / 16 players / 100,000 independent draws:');
+  for (const [key, count] of Object.entries(outcomes)) {
+    console.log('  invited player courts ' + key + ': ' + percent(count));
+  }
+  for (const player of [0, 1, 2, 14, 15]) {
+    console.log('  player ' + (player + 1) + ': ' + [1,2,3,4]
+      .map(c => 'court ' + c + ' ' + percent(distribution[player][c])).join(', '));
   }
 });

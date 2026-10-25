@@ -1114,9 +1114,10 @@
   </section>
 
   <footer class="app-footer">
-    <span id="appVersion">v2.0</span>
+    <span id="appVersion">v2.0.1</span>
     <details><summary data-i18n="whatsNew">Wat is nieuw?</summary>
       <ul>
+        <li data-i18n="changeKocRandom">KOC: meer variatie op de onderste banen en in de spelersvolgorde.</li>
         <li data-i18n="changeKoc">King of the Court als vierde speelvorm.</li>
         <li data-i18n="changeAutosave">Automatisch bewaren en hervatten.</li>
         <li data-i18n="changePwa">Installeerbaar, offline en presentatiemodus.</li>
@@ -1286,6 +1287,7 @@
       resumeTitle: 'Vorige sessie gevonden', resumeBody: 'Wil je verdergaan waar je gebleven was, of een nieuwe sessie beginnen?',
       resumeNew: 'Nieuwe sessie', resumeContinue: 'Doorgaan',
       whatsNew: 'Wat is nieuw?', changeKoc: 'King of the Court als vierde speelvorm.',
+      changeKocRandom: 'KOC: meer variatie op de onderste banen en in de spelersvolgorde.',
       changeAutosave: 'Automatisch bewaren en hervatten.', changePwa: 'Installeerbaar, offline en presentatiemodus.',
       updateAvailable: 'Er staat een nieuwe versie klaar.', updateReload: 'Vernieuwen',
       beginnerLabel: 'Zilver',
@@ -1446,6 +1448,7 @@
       resumeTitle: 'Previous session found', resumeBody: 'Would you like to pick up where you left off, or start a new session?',
       resumeNew: 'New session', resumeContinue: 'Continue',
       whatsNew: 'What is new?', changeKoc: 'King of the Court is the fourth format.',
+      changeKocRandom: 'KOC: more variation across lower courts and player display order.',
       changeAutosave: 'Automatic saving and session recovery.', changePwa: 'Installable, offline, and presentation mode.',
       updateAvailable: 'A new version is available.', updateReload: 'Refresh',
       beginnerLabel: 'Silver',
@@ -1537,7 +1540,7 @@
     splitDone: false,
     boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
     laterAdditions: {}, // name -> true, for players added via Edit Players after initial creation
-    koc: { courts: 4, roster: [], assignment: null, lastSignature: '' }
+    koc: { courts: 4, roster: [], assignment: null, displayOrder: null, lastSignature: '' }
   };
 
   // ---------- helpers ----------
@@ -1582,6 +1585,13 @@
     var k = ensureKocRoster(), root = document.getElementById('kocResult');
     root.innerHTML = '';
     if (!k.assignment) return;
+    // The display order is randomised once per roll, then kept stable while
+    // names are edited and when an auto-saved session is resumed.
+    var indices = Object.keys(k.assignment).map(Number);
+    if (!Array.isArray(k.displayOrder) || k.displayOrder.length !== indices.length ||
+        k.displayOrder.some(function(i, j){ return indices.indexOf(i) === -1 || k.displayOrder.indexOf(i) !== j; })){
+      k.displayOrder = shuffle(indices);
+    }
     for (var b = k.courts; b >= 1; b--){
       var court = document.createElement('article');
       court.className = 'koc-court' + (b === k.courts ? ' crown' : '');
@@ -1589,7 +1599,7 @@
       title.textContent = t('courtLabel') + ' ' + b + (b === k.courts ? ' 👑' : '');
       court.appendChild(title);
       var list = document.createElement('ul');
-      var here = Object.keys(k.assignment).map(Number).filter(function(i){ return k.assignment[i] === b; });
+      var here = k.displayOrder.filter(function(i){ return k.assignment[i] === b; });
       here.forEach(function(i){
         var li = document.createElement('li');
         li.textContent = kocPlayerName(i);
@@ -1622,6 +1632,7 @@
           k.courts = value;
           ensureKocRoster();
           k.assignment = null;
+          k.displayOrder = null;
           renderKoc();
           document.getElementById('kocStatus').textContent = t('kocChanged');
         });
@@ -1641,6 +1652,7 @@
         person.active = checkbox.checked;
         row.classList.toggle('absent', !checkbox.checked);
         k.assignment = null;
+        k.displayOrder = null;
         renderKocCount();
         renderKocResult();
         document.getElementById('kocRoll').textContent = t('kocRoll');
@@ -1702,9 +1714,7 @@
       for (var b = 1; b <= k.courts; b++) if (slots[b] >= needed) return b;
       return null;
     }
-    // Late-listed invited participants remain together on the lowest court
-    // capable of accepting them. At very low counts this can mean the lowest
-    // fully occupied court instead of an otherwise one-player court.
+    // The organiser has a fixed preferred start court when it has capacity.
     var organiser = attendees.indexOf(0) !== -1 ? 0 : null;
     if (organiser !== null){
       var preferred = k.courts - 1;
@@ -1716,8 +1726,22 @@
     var guests = [k.courts * 4 - 2, k.courts * 4 - 1].filter(function(i){
       return attendees.indexOf(i) !== -1;
     });
-    var guestCourt = lowerWithCapacity(guests.length || 1);
-    guests.forEach(function(i){ if (guestCourt !== null) put(i, guestCourt); });
+    if (k.courts >= 4){
+      // Each invited player independently draws court 1 or 2 with equal odds
+      // while both have room. They may start together or separately. With an
+      // underfilled field we preserve complete upper courts and use the
+      // lowest remaining court if the bottom two have no free slots.
+      guests.forEach(function(i){
+        var candidates = [1, 2].filter(function(b){ return slots[b] > 0; });
+        var fallback = lowerWithCapacity(1);
+        if (!candidates.length && fallback !== null) candidates = [fallback];
+        if (candidates.length) put(i, candidates[Math.floor(Math.random() * candidates.length)]);
+      });
+    } else {
+      // For two or three courts, retain the original lowest-capable-court rule.
+      var guestCourt = lowerWithCapacity(guests.length || 1);
+      guests.forEach(function(i){ if (guestCourt !== null) put(i, guestCourt); });
+    }
     var remaining = shuffle(attendees.filter(function(i){ return result[i] === undefined; }));
     // The second name has a gentle upper-court bias rather than a hard rule.
     if (remaining.indexOf(1) !== -1){
@@ -1760,6 +1784,7 @@
     }
     k.assignment = best;
     k.lastSignature = signature;
+    k.displayOrder = shuffle(attendees);
     renderKocResult();
     document.getElementById('kocRoll').textContent = t('kocReroll');
     document.getElementById('kocCopy').disabled = false;
@@ -1774,7 +1799,8 @@
     if (!k.assignment) return;
     var lines = ['🎾 King of the Court'];
     for (var c = k.courts; c >= 1; c--){
-      var names = Object.keys(k.assignment).map(Number).filter(function(i){return k.assignment[i] === c;}).map(kocPlayerName);
+      var names = (k.displayOrder || Object.keys(k.assignment).map(Number))
+        .filter(function(i){return k.assignment[i] === c;}).map(kocPlayerName);
       lines.push(t('courtLabel') + ' ' + c + (c === k.courts ? ' 👑' : '') + ': ' + (names.join(', ') || '—'));
     }
     var output = lines.join('\n');
@@ -4166,7 +4192,7 @@
       pools: [], scores: {}, splitDone: false,
       boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
       laterAdditions: {},
-      koc: { courts: 4, roster: [], assignment: null, lastSignature: '' }
+      koc: { courts: 4, roster: [], assignment: null, displayOrder: null, lastSignature: '' }
     };
     playcountSort = {};
     roundsInput.value = 7;
