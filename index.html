@@ -3,7 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Toss / Americano</title>
+<meta name="theme-color" content="#1C437D">
+<meta name="description" content="Padel Toss, Gesplitste Toss, Americano en King of the Court in één webapp.">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./icon-192.png">
+<title>Padel · Toss / Americano / KOC</title>
 <!-- Fonts: system fallbacks only (no external font fetch), for reliability on restricted/sandboxed viewers -->
 <style>
   :root{
@@ -145,6 +150,60 @@
 
   .panel{ display:none; }
   .panel.visible{ display:block; }
+
+  /* The first screen deliberately contains only the four game choices. */
+  .mode-home{min-height:calc(100svh - 180px);display:flex;flex-direction:column;justify-content:center;gap:22px;}
+  .panel.mode-home.visible{display:flex;}
+  .mode-home h2{margin:0;text-align:center;font-size:clamp(26px,4vw,42px);color:var(--teal-900);}
+  .mode-home > p{text-align:center;color:var(--ink-soft);margin:-12px 0 4px;}
+  .mode-home .format-select{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;margin:0;}
+  .mode-home .format-btn{min-height:180px;align-items:center;text-align:center;justify-content:center;gap:10px;padding:25px 20px;}
+  .mode-home .format-btn .mode-icon{font-size:36px;line-height:1;}
+  .mode-home .format-btn .fb-name{font-size:clamp(17px,2.1vw,22px);}
+  .mode-home .format-btn .fb-desc{font-size:var(--fs-sm);max-width:30ch;}
+  .app-footer{border-top:1px solid var(--line);margin-top:48px;padding:18px 0 0;color:var(--ink-soft);font-size:var(--fs-xs);display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+  .app-footer details{max-width:480px;}
+  .app-footer summary{cursor:pointer;color:var(--teal-700);font-weight:700;}
+  .app-footer ul{margin:8px 0 0;padding-left:20px;}
+  .app-notice{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);z-index:100;max-width:min(94vw,540px);background:var(--teal-900);color:white;border-radius:12px;padding:14px 18px;box-shadow:0 12px 35px #12233D55;display:none;gap:12px;align-items:center;}
+  .app-notice.visible{display:flex;}
+  .app-notice button{background:var(--ball);border:0;border-radius:8px;padding:9px 12px;font-weight:800;cursor:pointer;}
+  .koc-setup{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px 20px;margin:16px 0;}
+  .koc-count-buttons{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0 18px;}
+  .koc-count-buttons button{border:2px solid var(--line);background:#fff;border-radius:10px;padding:10px 15px;min-width:52px;font-weight:800;color:var(--teal-900);cursor:pointer;}
+  .koc-count-buttons button.active{background:var(--teal-900);color:var(--ball);border-color:var(--teal-900);}
+  .koc-roster{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px;}
+  .koc-player{border:1px solid var(--line);border-radius:10px;padding:10px;display:flex;gap:8px;align-items:center;background:white;}
+  .koc-player.absent{opacity:.48;background:#f2f4f8;}
+  .koc-player input[type=checkbox]{width:18px;height:18px;accent-color:var(--teal-900);flex-shrink:0;}
+  .koc-player input[type=text]{min-width:0;width:100%;border:0;border-bottom:1px solid var(--line);background:transparent;padding:7px 2px;font:inherit;color:var(--ink);}
+  .koc-result{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin:20px 0;}
+  .koc-court{border:1px solid var(--line);border-radius:12px;background:white;overflow:hidden;}
+  .koc-court h3{background:var(--mist);margin:0;padding:13px 14px;color:var(--teal-900);font-size:var(--fs-md);}
+  .koc-court.crown h3{background:var(--teal-900);color:var(--ball);}
+  .koc-court ul{list-style:none;margin:0;padding:8px 14px;}
+  .koc-court li{padding:9px 0;border-bottom:1px solid var(--line);}
+  .koc-court li:last-child{border:0;}
+  .koc-court .empty{color:var(--ink-soft);}
+  .koc-help{font-size:var(--fs-sm);color:var(--ink-soft);line-height:1.5;margin-top:8px;}
+  .koc-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;}
+  .resume-modal .modal-box{max-width:430px;}
+  .resume-modal .modal-actions{flex-wrap:wrap;}
+  .present-exit{display:none;position:fixed;right:18px;bottom:18px;z-index:90;border:0;border-radius:10px;background:var(--ball);color:var(--teal-900);padding:12px 16px;font-weight:800;cursor:pointer;}
+  body.presentation-mode .present-exit{display:block;}
+  body.presentation-mode .masthead,body.presentation-mode .steps,body.presentation-mode .schedule-actions,body.presentation-mode .app-footer,body.presentation-mode .koc-setup,body.presentation-mode .koc-roster-tools,body.presentation-mode .koc-actions,body.presentation-mode .playcount-wrap{display:none!important;}
+  body.presentation-mode .wrap{max-width:1600px;padding:28px;}
+  body.presentation-mode .rounds-col{font-size:1.15em;}
+  body.presentation-mode .koc-result{grid-template-columns:repeat(auto-fit,minmax(230px,1fr));}
+  body.presentation-mode .koc-result li{font-size:1.3em;}
+  @media(max-width:680px){
+    .mode-home{min-height:calc(100svh - 150px);gap:16px;}
+    .mode-home .format-select{gap:10px;}
+    .mode-home .format-btn{min-height:158px;padding:16px 10px;}
+    .mode-home .format-btn .mode-icon{font-size:29px;}
+    .koc-roster{grid-template-columns:repeat(2,minmax(0,1fr));}
+  }
+  @media(max-width:370px){.mode-home .format-select{grid-template-columns:1fr;}.mode-home .format-btn{min-height:112px;}}
 
   h2.panel-title{
     font-family:var(--font-display);
@@ -727,6 +786,7 @@
   @media print{
     .steps, .schedule-actions, .board, .checkpoint-card, .lang-switch{ display:none !important; }
     #loadBtn, #saveBtn{ display:none !important; }
+    .koc-setup,.koc-roster-tools,.koc-actions,.app-footer,.present-exit{display:none!important;}
     body{ background:#fff; }
     .match-card{ break-inside:avoid; }
   }
@@ -749,6 +809,37 @@
     <div class="step" data-step="3"><span class="num">3</span> <span data-i18n="stepSchedule">Schema</span></div>
   </div>
 
+  <section class="panel mode-home" id="panel0" aria-labelledby="modeHomeTitle">
+    <h2 id="modeHomeTitle" data-i18n="homeTitle">Wat gaan we spelen?</h2>
+    <p data-i18n="homeSub">Kies een speelvorm om te beginnen</p>
+    <div class="lang-switch" id="homeLangSwitch" style="justify-content:center;margin:0;">
+      <button type="button" class="lang-btn active" data-lang="nl">NL</button>
+      <button type="button" class="lang-btn" data-lang="en">EN</button>
+    </div>
+    <div class="format-select" id="formatSelect">
+      <button class="format-btn" type="button" data-format="toss">
+        <span class="mode-icon" aria-hidden="true">🎾</span>
+        <span class="fb-name" data-i18n="formatToss">Toss</span>
+        <span class="fb-desc" data-i18n="formatTossDesc">Alleen een schema, geen uitslagen invullen</span>
+      </button>
+      <button class="format-btn" type="button" data-format="splitToss">
+        <span class="mode-icon" aria-hidden="true">🗂️</span>
+        <span class="fb-name" data-i18n="formatSplitToss">Gesplitste Toss</span>
+        <span class="fb-desc" data-i18n="formatSplitTossDesc">Niveaugroepen apart indelen</span>
+      </button>
+      <button class="format-btn" type="button" data-format="americano">
+        <span class="mode-icon" aria-hidden="true">🏆</span>
+        <span class="fb-name" data-i18n="formatAmericano">Americano</span>
+        <span class="fb-desc" data-i18n="formatAmericanoDesc">Met score en klassement</span>
+      </button>
+      <button class="format-btn" type="button" data-format="koc">
+        <span class="mode-icon" aria-hidden="true">👑</span>
+        <span class="fb-name" data-i18n="formatKoc">King of the Court</span>
+        <span class="fb-desc" data-i18n="formatKocDesc">Eén startindeling, daarna zelf doorschuiven</span>
+      </button>
+    </div>
+  </section>
+
   <!-- STEP 1 -->
   <section class="panel" id="panel1">
     <div class="lang-switch" id="langSwitch">
@@ -756,24 +847,8 @@
       <button type="button" class="lang-btn" data-lang="en">EN</button>
     </div>
 
-    <h2 class="panel-title" data-i18n="p1Title">Speelvorm instellen</h2>
-    <p class="panel-sub" data-i18n="p1Sub">Kies eerst een speelvorm. Geef daarna aan hoeveel banen je hebt en hoeveel spelers er komen.</p>
-
-    <p class="sub-heading" data-i18n="formatHeading">Wat voor speelvorm?</p>
-    <div class="format-select" id="formatSelect">
-      <button class="format-btn" type="button" data-format="toss">
-        <div class="fb-name" data-i18n="formatToss">Toss</div>
-        <div class="fb-desc" data-i18n="formatTossDesc">Alleen een schema, geen uitslagen invullen</div>
-      </button>
-      <button class="format-btn" type="button" data-format="splitToss">
-        <div class="fb-name" data-i18n="formatSplitToss">Gesplitste Toss</div>
-        <div class="fb-desc" data-i18n="formatSplitTossDesc">Beginners + gevorderden apart ingedeeld — optioneel met uitslagen en klassement per niveau</div>
-      </button>
-      <button class="format-btn" type="button" data-format="americano">
-        <div class="fb-name" data-i18n="formatAmericano">Americano / Competitieve toss</div>
-        <div class="fb-desc" data-i18n="formatAmericanoDesc">Met score, klassement en optioneel een winnaars/verliezers-schema</div>
-      </button>
-    </div>
+    <h2 class="panel-title" data-i18n="p1Title">Instellingen</h2>
+    <p class="panel-sub" data-i18n="p1Sub">Hoeveel banen zijn er en hoeveel spelers doen mee?</p>
 
     <p class="sub-heading" data-i18n="p1CourtsHeading">Hoeveel banen heb je?</p>
     <div class="courts-select" id="courtsSelect">
@@ -857,11 +932,37 @@
     <p class="error-msg" id="loadError"></p>
 
     <div class="actions-row" style="margin-top:22px;">
+      <button class="btn btn-ghost" id="backToModes" type="button" data-i18n="backToModes">← Speelvormen</button>
       <button class="btn btn-ghost" id="cancelToScheduleBtn1" type="button" data-i18n="cancelToScheduleBtn" style="display:none;">← Terug naar schema</button>
       <button class="btn btn-primary" id="continueTo2" type="button" data-i18n="continueBtn">Doorgaan →</button>
       <button class="btn btn-ghost" id="loadBtn" type="button" data-i18n="loadBtn">📂 Opgeslagen schema laden</button>
       <input type="file" id="loadFileInput" accept=".json,application/json" style="display:none;">
     </div>
+  </section>
+
+  <section class="panel" id="panelKoc">
+    <h2 class="panel-title" data-i18n="formatKoc">King of the Court</h2>
+    <p class="panel-sub" data-i18n="kocSub">Vul de spelers in, kies je banen en maak een startindeling. Daarna wijzen de uitslagen zichzelf.</p>
+    <div class="koc-setup">
+      <p class="sub-heading" data-i18n="kocCourts">Aantal banen</p>
+      <div class="koc-count-buttons" id="kocCourtButtons"></div>
+      <div class="koc-roster-tools">
+        <p class="sub-heading" data-i18n="kocNames">Wie spelen er mee?</p>
+        <p class="koc-help" data-i18n="kocNamesHint">Pas namen aan of vink een afwezige speler uit. Je kunt met minder spelers beginnen.</p>
+        <div class="koc-roster" id="kocRoster"></div>
+        <p class="koc-help" id="kocCount" aria-live="polite"></p>
+      </div>
+    </div>
+    <div class="koc-actions">
+      <button class="btn btn-ghost" id="kocBack" type="button" data-i18n="backToModes">← Speelvormen</button>
+      <button class="btn btn-primary" id="kocRoll" type="button" data-i18n="kocRoll">🎲 Genereer startindeling</button>
+      <button class="btn btn-ghost" id="kocCopy" type="button" data-i18n="kocCopy">Kopieer voor WhatsApp</button>
+      <button class="btn btn-ghost" id="kocSave" type="button" data-i18n="saveBtn">💾 Speelschema opslaan</button>
+      <button class="btn btn-ghost" id="kocLoad" type="button" data-i18n="loadBtn">📂 Opgeslagen schema laden</button>
+      <button class="btn btn-ghost" id="kocPresent" type="button" data-i18n="presentBtn">Presentatiemodus</button>
+    </div>
+    <p class="koc-help" id="kocStatus" aria-live="polite"></p>
+    <div class="koc-result" id="kocResult"></div>
   </section>
 
   <!-- STEP 2 -->
@@ -948,6 +1049,7 @@
       <button class="btn btn-ghost" id="startOverBtn" data-i18n="startOverBtn">↺ Opnieuw beginnen</button>
       <button class="btn btn-ghost" id="printBtn" data-i18n="printBtn">Schema afdrukken</button>
       <button class="btn btn-ghost" id="saveBtn" data-i18n="saveBtn">💾 Speelschema opslaan</button>
+      <button class="btn btn-ghost" id="presentBtn" data-i18n="presentBtn">Presentatiemodus</button>
     </div>
 
     <div class="schedule-layout">
@@ -1011,7 +1113,32 @@
     </div>
   </section>
 
+  <footer class="app-footer">
+    <span id="appVersion">v2.0</span>
+    <details><summary data-i18n="whatsNew">Wat is nieuw?</summary>
+      <ul>
+        <li data-i18n="changeKoc">King of the Court als vierde speelvorm.</li>
+        <li data-i18n="changeAutosave">Automatisch bewaren en hervatten.</li>
+        <li data-i18n="changePwa">Installeerbaar, offline en presentatiemodus.</li>
+      </ul>
+    </details>
+  </footer>
+
 </div>
+
+<button id="presentExit" class="present-exit" type="button" data-i18n="presentExit">Sluit presentatiemodus</button>
+
+<div class="modal-overlay resume-modal" id="resumeOverlay" role="dialog" aria-modal="true" aria-labelledby="resumeTitle">
+  <div class="modal-box">
+    <h2 id="resumeTitle" class="panel-title" data-i18n="resumeTitle">Vorige sessie gevonden</h2>
+    <p data-i18n="resumeBody">Wil je verdergaan waar je gebleven was, of een nieuwe sessie beginnen?</p>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="resumeNew" type="button" data-i18n="resumeNew">Nieuwe sessie</button>
+      <button class="btn btn-primary" id="resumeContinue" type="button" data-i18n="resumeContinue">Doorgaan</button>
+    </div>
+  </div>
+</div>
+<div class="app-notice" id="updateNotice" role="status"><span id="updateNoticeText"></span><button type="button" id="updateReload" data-i18n="updateReload">Vernieuwen</button></div>
 
 <div class="modal-overlay" id="confirmOverlay">
   <div class="modal-box">
@@ -1027,9 +1154,9 @@
 (function(){
   "use strict";
 
-  // Safety net: make sure panel 1 is visible even if something below throws,
+  // Safety net: show the format selection even if a later script fails.
   // so a script error never leaves the whole page blank.
-  try { document.getElementById('panel1').classList.add('visible'); } catch(e0){}
+  try { document.getElementById('panel0').classList.add('visible'); } catch(e0){}
 
   try {
 
@@ -1037,8 +1164,10 @@
   var STR = {
     nl: {
       stepSetup: 'Instellen', stepNames: 'Namen', stepSchedule: 'Schema',
-      p1Title: 'Speelvorm instellen',
-      p1Sub: 'Kies eerst een speelvorm. Geef daarna aan hoeveel banen je hebt en hoeveel spelers er komen. Er spelen maar 4 tegelijk per baan — wie niet speelt, wacht tot de volgende ronde.',
+      homeTitle: 'Wat gaan we spelen?', homeSub: 'Kies een speelvorm om te beginnen',
+      backToModes: '← Speelvormen',
+      p1Title: 'Instellingen',
+      p1Sub: 'Geef aan hoeveel banen je hebt en hoeveel spelers er komen. Er spelen maar 4 tegelijk per baan — wie niet speelt, wacht tot de volgende ronde.',
       p1PlayersHeading: 'Hoeveel spelers?',
       p1PlayersUnit: 'spelers',
       p1CourtsHeading: 'Hoeveel banen heb je?',
@@ -1135,6 +1264,30 @@
       formatSplitTossDesc: 'Twee of drie niveaus apart ingedeeld — optioneel met uitslagen en klassement per niveau',
       formatAmericano: 'Americano / Competitieve toss',
       formatAmericanoDesc: 'Met score, klassement en optioneel een winnaars/verliezers-schema',
+      formatKoc: 'King of the Court',
+      formatKocDesc: 'Eén startindeling, daarna zelf doorschuiven',
+      kocSub: 'Vul spelers in en maak een startindeling. Daarna bepalen de resultaten het doorschuiven.',
+      kocCourts: 'Aantal banen',
+      kocNames: 'Wie spelen er mee?',
+      kocNamesHint: 'Pas namen aan of vink afwezige spelers uit. Je kunt met minder spelers beginnen.',
+      kocCount: '{active} van {total} spelers aanwezig',
+      kocRoll: '🎲 Genereer startindeling',
+      kocReroll: '🎲 Opnieuw gooien',
+      kocCopy: 'Kopieer voor WhatsApp',
+      kocNoSchedule: 'Vul de namen in en genereer de eerste startindeling.',
+      kocMin: 'Er zijn minimaal vier aanwezige spelers nodig.',
+      kocTooMany: 'Er kunnen maximaal vier spelers per baan meedoen.',
+      kocDup: 'Namen moeten uniek zijn; controleer de aanwezige spelers.',
+      kocGenerated: 'Startindeling gemaakt. De onderste baan kan minder dan vier spelers hebben.',
+      kocChanged: 'De deelnemers zijn gewijzigd. Genereer opnieuw om de baanindeling te actualiseren.',
+      kocCopied: 'Indeling gekopieerd. Plak hem in WhatsApp.',
+      kocCopyFail: 'Kopiëren is niet gelukt. Selecteer de indeling om die te delen.',
+      presentBtn: 'Presentatiemodus', presentExit: 'Sluit presentatiemodus',
+      resumeTitle: 'Vorige sessie gevonden', resumeBody: 'Wil je verdergaan waar je gebleven was, of een nieuwe sessie beginnen?',
+      resumeNew: 'Nieuwe sessie', resumeContinue: 'Doorgaan',
+      whatsNew: 'Wat is nieuw?', changeKoc: 'King of the Court als vierde speelvorm.',
+      changeAutosave: 'Automatisch bewaren en hervatten.', changePwa: 'Installeerbaar, offline en presentatiemodus.',
+      updateAvailable: 'Er staat een nieuwe versie klaar.', updateReload: 'Vernieuwen',
       beginnerLabel: 'Zilver',
       ervarenLabel: 'Goud',
       gevorderdLabel: 'Platina',
@@ -1171,8 +1324,10 @@
     },
     en: {
       stepSetup: 'Setup', stepNames: 'Names', stepSchedule: 'Schedule',
-      p1Title: 'Set up the format',
-      p1Sub: 'Start by picking a format. Then set how many courts you have and how many players are coming. Only 4 play on a court at once — whoever isn\'t playing waits for the next round.',
+      homeTitle: 'What shall we play?', homeSub: 'Choose a format to get started',
+      backToModes: '← Formats',
+      p1Title: 'Settings',
+      p1Sub: 'Set how many courts and players you have. Only 4 play on a court at once — whoever isn\'t playing waits for the next round.',
       p1PlayersHeading: 'How many players?',
       p1PlayersUnit: 'players',
       p1CourtsHeading: 'How many courts do you have?',
@@ -1269,6 +1424,30 @@
       formatSplitTossDesc: 'Two or three levels scheduled separately — optionally with results and a leaderboard per level',
       formatAmericano: 'Americano / Competitive Toss',
       formatAmericanoDesc: 'With scores, a leaderboard, and an optional winners/losers schedule',
+      formatKoc: 'King of the Court',
+      formatKocDesc: 'One starting lineup, then move courts based on results',
+      kocSub: 'Enter players and generate a starting lineup. Results decide movement after that.',
+      kocCourts: 'Number of courts',
+      kocNames: 'Who is playing?',
+      kocNamesHint: 'Edit names or untick absent players. You can start with fewer players.',
+      kocCount: '{active} of {total} players attending',
+      kocRoll: '🎲 Generate starting lineup',
+      kocReroll: '🎲 Reroll',
+      kocCopy: 'Copy for WhatsApp',
+      kocNoSchedule: 'Enter names and generate your starting lineup.',
+      kocMin: 'At least four attending players are required.',
+      kocTooMany: 'At most four players per court can participate.',
+      kocDup: 'Player names must be unique. Check the attending players.',
+      kocGenerated: 'Starting lineup created. The lowest court may have fewer than four players.',
+      kocChanged: 'The roster changed. Regenerate to update the court assignments.',
+      kocCopied: 'Lineup copied. Paste it into WhatsApp.',
+      kocCopyFail: 'Copying failed. Select the lineup to share it.',
+      presentBtn: 'Presentation mode', presentExit: 'Exit presentation',
+      resumeTitle: 'Previous session found', resumeBody: 'Would you like to pick up where you left off, or start a new session?',
+      resumeNew: 'New session', resumeContinue: 'Continue',
+      whatsNew: 'What is new?', changeKoc: 'King of the Court is the fourth format.',
+      changeAutosave: 'Automatic saving and session recovery.', changePwa: 'Installable, offline, and presentation mode.',
+      updateAvailable: 'A new version is available.', updateReload: 'Refresh',
       beginnerLabel: 'Silver',
       ervarenLabel: 'Gold',
       gevorderdLabel: 'Platinum',
@@ -1323,8 +1502,14 @@
   // The heading names the format actually being played, so a printed or shared
   // schedule says what it is without needing the setup screen for context.
   function renderAppTitle(){
+    if (state.step === 0){
+      document.getElementById('appTitle').textContent = 'PADEL TOSS';
+      document.title = 'Padel Toss';
+      return;
+    }
     var key = state.format === 'splitToss' ? 'formatSplitToss'
             : state.format === 'americano' ? 'formatAmericano'
+            : state.format === 'koc' ? 'formatKoc'
             : 'formatToss';
     var el = document.getElementById('appTitle');
     if (el) el.textContent = t(key);
@@ -1334,7 +1519,7 @@
   var state = {
     step: 1,
     lang: 'nl',
-    format: 'toss', // 'toss' | 'splitToss' | 'americano'
+    format: 'toss', // 'toss' | 'splitToss' | 'americano' | 'koc'
     playerCount: null,
     levelCounts: [8, 8, 0],        // beginners / ervaren / gevorderden (0 = level unused)
     courts: 2,
@@ -1351,7 +1536,8 @@
     scores: {},
     splitDone: false,
     boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
-    laterAdditions: {} // name -> true, for players added via Edit Players after initial creation
+    laterAdditions: {}, // name -> true, for players added via Edit Players after initial creation
+    koc: { courts: 4, roster: [], assignment: null, lastSignature: '' }
   };
 
   // ---------- helpers ----------
@@ -1363,6 +1549,240 @@
     }
     return a;
   }
+
+  // ---------- King of the Court: start assignment only ----------
+  function ensureKocRoster(){
+    if (!state.koc || typeof state.koc !== 'object'){
+      state.koc = { courts: 4, roster: [], assignment: null, lastSignature: '' };
+    }
+    var k = state.koc;
+    k.courts = Math.max(2, Math.min(8, Number(k.courts) || 4));
+    if (!Array.isArray(k.roster)) k.roster = [];
+    for (var i = k.roster.length; i < k.courts * 4; i++){
+      k.roster.push({ name: '', active: true });
+    }
+    if (!k.lastSignature) k.lastSignature = '';
+    return k;
+  }
+
+  function kocPlayerName(index){
+    var person = ensureKocRoster().roster[index];
+    var val = person && typeof person.name === 'string' ? person.name.trim() : '';
+    return val || tf('namePlaceholder', { n: index + 1 });
+  }
+
+  function kocAttendees(){
+    var k = ensureKocRoster();
+    return k.roster.slice(0, k.courts * 4).map(function(person, i){
+      return person && person.active !== false ? i : null;
+    }).filter(function(i){ return i !== null; });
+  }
+
+  function renderKocResult(){
+    var k = ensureKocRoster(), root = document.getElementById('kocResult');
+    root.innerHTML = '';
+    if (!k.assignment) return;
+    for (var b = k.courts; b >= 1; b--){
+      var court = document.createElement('article');
+      court.className = 'koc-court' + (b === k.courts ? ' crown' : '');
+      var title = document.createElement('h3');
+      title.textContent = t('courtLabel') + ' ' + b + (b === k.courts ? ' 👑' : '');
+      court.appendChild(title);
+      var list = document.createElement('ul');
+      var here = Object.keys(k.assignment).map(Number).filter(function(i){ return k.assignment[i] === b; });
+      here.forEach(function(i){
+        var li = document.createElement('li');
+        li.textContent = kocPlayerName(i);
+        list.appendChild(li);
+      });
+      for (var empty = here.length; empty < 4; empty++){
+        var placeholder = document.createElement('li');
+        placeholder.className = 'empty';
+        placeholder.textContent = '—';
+        list.appendChild(placeholder);
+      }
+      court.appendChild(list);
+      root.appendChild(court);
+    }
+  }
+
+  function renderKoc(){
+    var k = ensureKocRoster();
+    var buttons = document.getElementById('kocCourtButtons');
+    buttons.innerHTML = '';
+    for (var count = 2; count <= 8; count++){
+      (function(value){
+        var btn = document.createElement('button');
+        btn.type = 'button';
+        btn.textContent = String(value);
+        btn.classList.toggle('active', value === k.courts);
+        btn.setAttribute('aria-pressed', value === k.courts ? 'true' : 'false');
+        btn.addEventListener('click', function(){
+          if (k.courts === value) return;
+          k.courts = value;
+          ensureKocRoster();
+          k.assignment = null;
+          renderKoc();
+          document.getElementById('kocStatus').textContent = t('kocChanged');
+        });
+        buttons.appendChild(btn);
+      })(count);
+    }
+    var roster = document.getElementById('kocRoster');
+    roster.innerHTML = '';
+    k.roster.slice(0, k.courts * 4).forEach(function(person, i){
+      var row = document.createElement('label');
+      row.className = 'koc-player' + (person.active === false ? ' absent' : '');
+      var checkbox = document.createElement('input');
+      checkbox.type = 'checkbox';
+      checkbox.checked = person.active !== false;
+      checkbox.setAttribute('aria-label', tf('namePlaceholder', { n: i + 1 }));
+      checkbox.addEventListener('change', function(){
+        person.active = checkbox.checked;
+        row.classList.toggle('absent', !checkbox.checked);
+        k.assignment = null;
+        renderKocCount();
+        renderKocResult();
+        document.getElementById('kocRoll').textContent = t('kocRoll');
+        document.getElementById('kocCopy').disabled = true;
+        document.getElementById('kocStatus').textContent = t('kocChanged');
+      });
+      var input = document.createElement('input');
+      input.type = 'text';
+      input.maxLength = 50;
+      input.placeholder = tf('namePlaceholder', { n: i + 1 });
+      input.value = person.name || '';
+      input.setAttribute('aria-label', tf('namePlaceholder', { n: i + 1 }));
+      input.addEventListener('input', function(){
+        person.name = input.value;
+        renderKocResult();
+      });
+      row.appendChild(checkbox);
+      row.appendChild(input);
+      roster.appendChild(row);
+    });
+    renderKocCount();
+    renderKocResult();
+    document.getElementById('kocRoll').textContent = t(k.assignment ? 'kocReroll' : 'kocRoll');
+    document.getElementById('kocCopy').disabled = !k.assignment;
+    document.getElementById('kocStatus').textContent = t(k.assignment ? 'kocGenerated' : 'kocNoSchedule');
+  }
+
+  function renderKocCount(){
+    var k = ensureKocRoster();
+    document.getElementById('kocCount').textContent = tf('kocCount', {
+      active: kocAttendees().length, total: k.courts * 4
+    });
+    document.getElementById('kocRoll').disabled = kocAttendees().length < 4;
+  }
+
+  function kocSignature(assignment, courts){
+    return Array.from({length:courts}, function(_, i){
+      var b = i + 1;
+      return Object.keys(assignment).map(Number)
+        .filter(function(idx){ return assignment[idx] === b; }).sort(function(a,c){return a-c;}).join(',');
+    }).join('|');
+  }
+
+  function makeKocAssignment(attendees, k){
+    // Full courts take priority, starting at the highest court. An underfilled
+    // court is therefore always below every fully occupied court.
+    var slots = {};
+    var remainder = attendees.length;
+    for (var court = k.courts; court >= 1; court--){
+      slots[court] = Math.min(4, remainder);
+      remainder -= slots[court];
+    }
+    var result = {};
+    function put(idx, court){
+      if (slots[court] > 0){ result[idx] = court; slots[court]--; return true; }
+      return false;
+    }
+    function lowerWithCapacity(needed){
+      for (var b = 1; b <= k.courts; b++) if (slots[b] >= needed) return b;
+      return null;
+    }
+    // Late-listed invited participants remain together on the lowest court
+    // capable of accepting them. At very low counts this can mean the lowest
+    // fully occupied court instead of an otherwise one-player court.
+    var organiser = attendees.indexOf(0) !== -1 ? 0 : null;
+    if (organiser !== null){
+      var preferred = k.courts - 1;
+      if (!put(organiser, preferred)){
+        var fallback = lowerWithCapacity(1);
+        if (fallback !== null) put(organiser, fallback);
+      }
+    }
+    var guests = [k.courts * 4 - 2, k.courts * 4 - 1].filter(function(i){
+      return attendees.indexOf(i) !== -1;
+    });
+    var guestCourt = lowerWithCapacity(guests.length || 1);
+    guests.forEach(function(i){ if (guestCourt !== null) put(i, guestCourt); });
+    var remaining = shuffle(attendees.filter(function(i){ return result[i] === undefined; }));
+    // The second name has a gentle upper-court bias rather than a hard rule.
+    if (remaining.indexOf(1) !== -1){
+      remaining.splice(remaining.indexOf(1), 1);
+      var upper = [];
+      for (var h = k.courts; h >= Math.max(1, k.courts - 1); h--){
+        for (var n = 0; n < slots[h]; n++) upper.push(h);
+      }
+      if (upper.length && Math.random() < .75){
+        put(1, upper[Math.floor(Math.random() * upper.length)]);
+      } else remaining.push(1);
+    }
+    var free = [];
+    for (var b2 = 1; b2 <= k.courts; b2++){
+      for (var n2 = 0; n2 < slots[b2]; n2++) free.push(b2);
+    }
+    free = shuffle(free);
+    remaining.forEach(function(i,j){ result[i] = free[j]; });
+    return result;
+  }
+
+  function rollKoc(){
+    var k = ensureKocRoster();
+    var attendees = kocAttendees();
+    var status = document.getElementById('kocStatus');
+    if (attendees.length < 4){ status.textContent = t('kocMin'); return; }
+    var seen = {};
+    for (var i = 0; i < attendees.length; i++){
+      var name = kocPlayerName(attendees[i]).toLocaleLowerCase();
+      if (seen[name]){ status.textContent = t('kocDup'); return; }
+      seen[name] = true;
+    }
+    var best = null, signature = '';
+    for (var attempt = 0; attempt < 90; attempt++){
+      var candidate = makeKocAssignment(attendees, k);
+      var next = kocSignature(candidate, k.courts);
+      best = candidate;
+      signature = next;
+      if (signature !== k.lastSignature) break;
+    }
+    k.assignment = best;
+    k.lastSignature = signature;
+    renderKocResult();
+    document.getElementById('kocRoll').textContent = t('kocReroll');
+    document.getElementById('kocCopy').disabled = false;
+    status.textContent = t('kocGenerated');
+  }
+
+  document.getElementById('kocRoll').addEventListener('click', rollKoc);
+  document.getElementById('kocSave').addEventListener('click', function(){ saveSchedule(); });
+  document.getElementById('kocLoad').addEventListener('click', function(){ document.getElementById('loadFileInput').click(); });
+  document.getElementById('kocCopy').addEventListener('click', function(){
+    var k = ensureKocRoster();
+    if (!k.assignment) return;
+    var lines = ['🎾 King of the Court'];
+    for (var c = k.courts; c >= 1; c--){
+      var names = Object.keys(k.assignment).map(Number).filter(function(i){return k.assignment[i] === c;}).map(kocPlayerName);
+      lines.push(t('courtLabel') + ' ' + c + (c === k.courts ? ' 👑' : '') + ': ' + (names.join(', ') || '—'));
+    }
+    var output = lines.join('\n');
+    function copied(ok){ document.getElementById('kocStatus').textContent = t(ok ? 'kocCopied' : 'kocCopyFail'); }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(output).then(function(){copied(true);}, function(){window.prompt(t('kocCopy'),output);});
+    } else window.prompt(t('kocCopy'),output);
+  });
 
   function usableCourts(n, courtsAvailable){
     return Math.max(1, Math.min(courtsAvailable, Math.floor(n / 4)));
@@ -1676,10 +2096,18 @@
   // ---------- step nav ----------
   function goToStep(n){
     state.step = n;
+    renderAppTitle();
+    if (n === 0){
+      document.querySelectorAll('.format-btn').forEach(function(button){
+        button.classList.remove('active');
+      });
+    }
     document.getElementById('panelEdit').classList.remove('visible');
-    [1,2,3].forEach(function(i){
+    [0,1,2,3].forEach(function(i){
       document.getElementById('panel'+i).classList.toggle('visible', i === n);
     });
+    document.getElementById('panelKoc').classList.toggle('visible', n === 4);
+    document.getElementById('stepsNav').style.display = (n === 0 || n === 4) ? 'none' : '';
     document.querySelectorAll('#stepsNav .step').forEach(function(el){
       var s = parseInt(el.getAttribute('data-step'), 10);
       el.classList.toggle('active', s === n);
@@ -1697,9 +2125,12 @@
   document.querySelectorAll('.lang-btn').forEach(function(btn){
     btn.addEventListener('click', function(){
       state.lang = btn.getAttribute('data-lang');
-      document.querySelectorAll('.lang-btn').forEach(function(b){ b.classList.toggle('active', b === btn); });
+      document.querySelectorAll('.lang-btn').forEach(function(b){
+        b.classList.toggle('active', b.getAttribute('data-lang') === state.lang);
+      });
       applyStaticTranslations();
       renderCourtsPreview();
+      renderKoc();
     });
   });
 
@@ -1784,16 +2215,23 @@
       document.querySelectorAll('.format-btn').forEach(function(b){
         b.classList.toggle('active', b === btn);
       });
+      if (state.format === 'koc'){
+        renderAppTitle();
+        renderKoc();
+        goToStep(4);
+        return;
+      }
       var isSplit = state.format === 'splitToss';
       singlePlayersBlock.style.display = isSplit ? 'none' : '';
       splitPlayersBlock.style.display = isSplit ? '' : 'none';
       renderAppTitle();
       renderCourtsPreview();
+      goToStep(1);
     });
   });
   (function initFormatButton(){
     var el = document.querySelector('.format-btn[data-format="' + state.format + '"]');
-    if (el) el.classList.add('active');
+    if (el && state.step > 0) el.classList.add('active');
   })();
 
   function renderCourtsPreview(){
@@ -3547,10 +3985,10 @@
   // ---------- Saving and loading a schedule ----------
   // A schedule is nested data (levels, rounds, courts, teams, scores), so
   // it is saved as JSON rather than CSV: CSV would have to flatten the nesting
-  // and could not be read back reliably. The file is a plain text file the
-  // organiser keeps themselves -- nothing is stored in the browser.
+  // and could not be read back reliably. The organiser keeps this portable
+  // backup; a separate working copy is also auto-saved locally in the browser.
   var SAVE_FORMAT = 'padel-scheduler';
-  var SAVE_VERSION = 1;
+  var SAVE_VERSION = 2;
 
   function buildSaveData(){
     return {
@@ -3591,9 +4029,19 @@
     if (typeof data.version !== 'number' || data.version > SAVE_VERSION) return 'loadErrVersion';
     var st = data.state;
     if (!st || typeof st !== 'object') return 'loadErrCorrupt';
-    if (['toss', 'splitToss', 'americano'].indexOf(st.format) === -1) return 'loadErrCorrupt';
+    if (['toss', 'splitToss', 'americano', 'koc'].indexOf(st.format) === -1) return 'loadErrCorrupt';
     if (!Array.isArray(st.pools)) return 'loadErrCorrupt';
     if (!Array.isArray(st.levelCounts) || st.levelCounts.length !== LEVELS.length) return 'loadErrCorrupt';
+    if (st.format === 'koc'){
+      if (!st.koc || !Array.isArray(st.koc.roster) || !Number.isInteger(st.koc.courts) ||
+          st.koc.courts < 2 || st.koc.courts > 8) return 'loadErrCorrupt';
+      if (st.koc.assignment && (typeof st.koc.assignment !== 'object' ||
+          Object.keys(st.koc.assignment).some(function(key){
+            return !/^\d+$/.test(key) || Number(key) >= st.koc.courts * 4 ||
+              st.koc.assignment[key] < 1 || st.koc.assignment[key] > st.koc.courts;
+          }))) return 'loadErrCorrupt';
+      return null;
+    }
     for (var i = 0; i < st.pools.length; i++){
       var pool = st.pools[i];
       if (!pool || !Array.isArray(pool.players) || !Array.isArray(pool.rounds)) return 'loadErrCorrupt';
@@ -3603,6 +4051,11 @@
 
   function applyLoadedState(st){
     state = st;
+    if (state.lang !== 'en') state.lang = 'nl';
+    document.querySelectorAll('.lang-btn').forEach(function(b){
+      b.classList.toggle('active', b.getAttribute('data-lang') === state.lang);
+    });
+    applyStaticTranslations();
     // Fill in anything an older save might not carry, so the UI never reads undefined.
     if (!state.boardHidden) state.boardHidden = { main: false, beginner: false, ervaren: false, gevorderd: false };
     if (!state.laterAdditions) state.laterAdditions = {};
@@ -3611,6 +4064,7 @@
     if (!Array.isArray(state.activeRosterLevels)) state.activeRosterLevels = [[], [], []];
     if (!Array.isArray(state.activeRoster)) state.activeRoster = [];
     if (!state.scores) state.scores = {};
+    ensureKocRoster();
 
     // Put every control back in step with the restored state.
     document.querySelectorAll('.format-btn').forEach(function(b){
@@ -3630,6 +4084,12 @@
     syncCourtSelection();
     renderAppTitle();
     renderCourtsPreview();
+
+    if (state.format === 'koc'){
+      renderKoc();
+      goToStep(4);
+      return;
+    }
 
     playcountVisible = false;
     playcountPanel.style.display = 'none';
@@ -3666,6 +4126,7 @@
     }
     loadError.classList.remove('visible');
     applyLoadedState(data.state);
+    scheduleAutosave();
     return true;
   }
 
@@ -3704,7 +4165,8 @@
       activeRoster: [], activeRosterLevels: [[], [], []],
       pools: [], scores: {}, splitDone: false,
       boardHidden: { main: false, beginner: false, ervaren: false, gevorderd: false },
-      laterAdditions: {}
+      laterAdditions: {},
+      koc: { courts: 4, roster: [], assignment: null, lastSignature: '' }
     };
     playcountSort = {};
     roundsInput.value = 7;
@@ -3736,7 +4198,9 @@
     playcountToggleBtn.textContent = t('playcountToggleShow');
 
     document.getElementById('metaStrip').style.display = 'none';
-    goToStep(1);
+    renderKoc();
+    goToStep(0);
+    clearAutosave();
   }
 
   document.getElementById('startOverBtn').addEventListener('click', function(){
@@ -3751,8 +4215,157 @@
 
   document.getElementById('printBtn').addEventListener('click', function(){ window.print(); });
 
+  function backToModePicker(){
+    if (state.pools.length || (state.koc && state.koc.assignment)){
+      showConfirmModal(t('modalStartOverText'), t('confirmStartOverBtn'), doStartOver);
+    } else {
+      goToStep(0);
+    }
+  }
+  document.getElementById('backToModes').addEventListener('click', backToModePicker);
+  document.getElementById('kocBack').addEventListener('click', backToModePicker);
+
+  // ---------- Local-first recovery ----------
+  // No account or remote database: the organiser's own browser holds the
+  // working copy, and the JSON export above remains a portable backup.
+  var AUTOSAVE_KEY = 'padel-toss-americano-session-v2';
+  var autosaveTimer = null;
+  var autosaveSuspended = false;
+  function formSnapshot(){
+    return {
+      players: playerCountInput.value,
+      levelCounts: levelCountInputs.map(function(inp){return inp.value;}),
+      rounds: roundsInput.value,
+      splitRound: splitRoundInput.value,
+      regroup: regroupToggle.checked
+    };
+  }
+  function clearAutosave(){
+    clearTimeout(autosaveTimer);
+    try { localStorage.removeItem(AUTOSAVE_KEY); } catch(e){}
+  }
+  function writeAutosave(){
+    clearTimeout(autosaveTimer);
+    if (autosaveSuspended || state.step === 0) return;
+    try {
+      localStorage.setItem(AUTOSAVE_KEY, JSON.stringify({
+        format: 'padel-toss-autosave', version: 2,
+        savedAt: new Date().toISOString(),
+        state: state, form: formSnapshot()
+      }));
+    } catch(e){
+      // Private browsing or full storage must not interrupt a live match.
+    }
+  }
+  function scheduleAutosave(){
+    if (autosaveSuspended || state.step === 0) return;
+    clearTimeout(autosaveTimer);
+    autosaveTimer = setTimeout(writeAutosave, 250);
+  }
+  document.addEventListener('input', scheduleAutosave);
+  document.addEventListener('change', scheduleAutosave);
+  document.addEventListener('click', scheduleAutosave);
+  window.addEventListener('pagehide', writeAutosave);
+
+  function restoreAutosave(saved){
+    if (!saved || saved.format !== 'padel-toss-autosave' ||
+        saved.version !== 2 || !saved.state) return false;
+    var problem = validateSaveData({format:SAVE_FORMAT,version:SAVE_VERSION,state:saved.state});
+    if (problem) return false;
+    autosaveSuspended = true;
+    try {
+      var priorStep = saved.state.step;
+      var form = saved.form || {};
+      applyLoadedState(saved.state);
+      if (form.players !== undefined) playerCountInput.value = form.players;
+      if (Array.isArray(form.levelCounts)){
+        levelCountInputs.forEach(function(inp,i){if(form.levelCounts[i] !== undefined) inp.value=form.levelCounts[i];});
+      }
+      if (form.rounds !== undefined) roundsInput.value = form.rounds;
+      if (form.splitRound !== undefined) splitRoundInput.value = form.splitRound;
+      regroupToggle.checked = !!form.regroup;
+      syncCourtSelection();
+      renderCourtsPreview();
+      if (state.format !== 'koc' && !state.pools.length){
+        if (priorStep === 2 && (state.playerCount !== null || state.format === 'splitToss')){
+          buildNameInputs();
+          goToStep(2);
+        } else goToStep(1);
+      }
+      return true;
+    } catch(e){
+      return false;
+    } finally {
+      autosaveSuspended = false;
+    }
+  }
+
+  var resumeOverlay = document.getElementById('resumeOverlay');
+  document.getElementById('resumeContinue').addEventListener('click', function(){
+    resumeOverlay.classList.remove('visible');
+    var saved = null;
+    try { saved = JSON.parse(localStorage.getItem(AUTOSAVE_KEY)); } catch(e){}
+    if (!restoreAutosave(saved)){
+      clearAutosave();
+      doStartOver();
+    }
+  });
+  document.getElementById('resumeNew').addEventListener('click', function(){
+    resumeOverlay.classList.remove('visible');
+    doStartOver();
+  });
+
+  // ---------- Presentation mode ----------
+  function setPresentation(enabled){
+    document.body.classList.toggle('presentation-mode', enabled);
+    if (enabled && document.documentElement.requestFullscreen){
+      var result = document.documentElement.requestFullscreen();
+      if (result && result.catch) result.catch(function(){});
+    } else if (!enabled && document.fullscreenElement && document.exitFullscreen){
+      document.exitFullscreen().catch(function(){});
+    }
+  }
+  document.getElementById('presentBtn').addEventListener('click', function(){setPresentation(true);});
+  document.getElementById('kocPresent').addEventListener('click', function(){setPresentation(true);});
+  document.getElementById('presentExit').addEventListener('click', function(){setPresentation(false);});
+  document.addEventListener('fullscreenchange', function(){
+    if (!document.fullscreenElement) document.body.classList.remove('presentation-mode');
+  });
+
+  // ---------- Install/offline support & safe update notification ----------
+  var updateNotice = document.getElementById('updateNotice');
+  function announceUpdate(){
+    document.getElementById('updateNoticeText').textContent = t('updateAvailable');
+    updateNotice.classList.add('visible');
+  }
+  document.getElementById('updateReload').addEventListener('click', function(){location.reload();});
+  if ('serviceWorker' in navigator && location.protocol === 'https:'){
+    window.addEventListener('load', function(){
+      navigator.serviceWorker.register('./sw.js').then(function(reg){
+        reg.addEventListener('updatefound', function(){
+          var worker = reg.installing;
+          if (!worker) return;
+          worker.addEventListener('statechange', function(){
+            if (worker.state === 'installed' && navigator.serviceWorker.controller) announceUpdate();
+          });
+        });
+        document.addEventListener('visibilitychange', function(){
+          if (!document.hidden) reg.update().catch(function(){});
+        });
+      }).catch(function(){});
+    });
+  }
+
   // init
-  goToStep(1);
+  renderKoc();
+  goToStep(0);
+  try {
+    var existing = JSON.parse(localStorage.getItem(AUTOSAVE_KEY));
+    if (existing && existing.format === 'padel-toss-autosave' && existing.version === 2 &&
+        validateSaveData({format:SAVE_FORMAT,version:SAVE_VERSION,state:existing.state}) === null){
+      resumeOverlay.classList.add('visible');
+    }
+  } catch(e){}
 
   } catch (err) {
     try {

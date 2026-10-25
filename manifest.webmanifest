@@ -1,0 +1,16 @@
+{
+  "name": "Padel Toss & Americano",
+  "short_name": "Padel Toss",
+  "description": "Toss, Gesplitste Toss, Americano en King of the Court.",
+  "lang": "nl",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#EEF3FA",
+  "theme_color": "#1C437D",
+  "icons": [
+    {"src": "./icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable"},
+    {"src": "./icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable"}
+  ]
+}

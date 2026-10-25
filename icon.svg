@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Padel Toss">
+  <rect width="512" height="512" rx="104" fill="#1C437D"/>
+  <circle cx="388" cy="132" r="49" fill="#FFC72C"/>
+  <path d="M363 100c28 15 45 39 46 70M406 94c-15 20-34 31-56 35" fill="none" stroke="#1C437D" stroke-width="9" stroke-linecap="round"/>
+  <g transform="rotate(-30 248 250)">
+    <rect x="151" y="106" width="194" height="240" rx="96" fill="#EEF3FA" stroke="#FFC72C" stroke-width="20"/>
+    <g fill="#1C437D">
+      <circle cx="208" cy="174" r="13"/><circle cx="258" cy="174" r="13"/><circle cx="308" cy="174" r="13"/>
+      <circle cx="185" cy="224" r="13"/><circle cx="233" cy="224" r="13"/><circle cx="282" cy="224" r="13"/><circle cx="323" cy="224" r="13"/>
+      <circle cx="208" cy="274" r="13"/><circle cx="258" cy="274" r="13"/><circle cx="308" cy="274" r="13"/>
+    </g>
+    <rect x="229" y="335" width="38" height="118" rx="18" fill="#FFC72C"/>
+    <rect x="215" y="424" width="66" height="30" rx="12" fill="#EEF3FA"/>
+  </g>
+</svg>
