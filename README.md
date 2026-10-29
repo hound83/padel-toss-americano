@@ -1,20 +1,22 @@
-<div align="center">
+<p align="center">
+  <img src="./icon.svg" alt="Koriander Padel Toss" width="88" />
+</p>
 
-<img src="./icon.svg" alt="Koriander Padel Toss" width="88" />
+<h1 align="center">🎾 Koriander Padel Toss</h1>
 
-# 🎾 Koriander Padel Toss
+<p align="center">
+  <strong>Van spelerslijst naar speelindeling, zonder gedoe.</strong><br />
+  Een eenvoudige webapp voor padelavonden, met vier speelvormen in één overzicht.
+</p>
 
-**Van spelerslijst naar speelindeling, zonder gedoe.**
+<p align="center">
+  <a href="https://hound83.github.io/padel-toss-americano/"><strong>▶️ OPEN DE KORIANDER TOSS</strong></a>
+</p>
 
-Een eenvoudige webapp voor padelavonden, met vier speelvormen in één overzicht.
-
-### [▶️ Open de Koriander Toss](https://hound83.github.io/padel-toss-americano/)
-
-**Directe URL:** https://hound83.github.io/padel-toss-americano/
-
-*Werkt op telefoon, tablet en computer. Geen account nodig.*
-
-</div>
+<p align="center">
+  <strong>Directe URL:</strong> <a href="https://hound83.github.io/padel-toss-americano/">https://hound83.github.io/padel-toss-americano/</a><br />
+  <em>Werkt op telefoon, tablet en computer. Geen account nodig.</em>
+</p>
 
 ---
 
@@ -87,12 +89,8 @@ node --test tests/koc.test.cjs
 
 ---
 
-<div align="center">
-
-**Klaar om te spelen?**
-
-### [🎾 Start de Koriander Toss](https://hound83.github.io/padel-toss-americano/)
-
-*Gemaakt voor gezellige én goed georganiseerde padelavonden.*
-
-</div>
+<p align="center">
+  <strong>Klaar om te spelen?</strong><br />
+  <a href="https://hound83.github.io/padel-toss-americano/"><strong>🎾 Start de Koriander Toss</strong></a><br />
+  <em>Gemaakt voor gezellige én goed georganiseerde padelavonden.</em>
+</p>
